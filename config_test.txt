@@ -1,0 +1,15 @@
+{
+  "engine_logger" => ['/home/weifeyao/boss/demo/persist_logger', 'Ruote::PersistLogger'],
+  "storage_conf_file" => "config_storages.txt",
+  "storage" => "fs",
+  "participants_conf_file" => "config_participants.txt",
+  "participants" => ["builder", "imager", "sizer", "tester"],
+  "amqp" => {
+              "host" => "amqpvm",
+              "user" => "ruote",
+              "pass" => "ruote",
+              "vhost" => "ruote-test"
+            },
+    
+   "version" => "1"         
+}

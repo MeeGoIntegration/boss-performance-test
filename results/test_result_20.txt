@@ -1,0 +1,11 @@
+
++++++ time statistics data: processes
+Run times: 20
+Total:     58.0
+Average:   2.9
+
++++++ time statistics data: participant sizer
+Run times: 20
+Total:     38.0
+Average:   1.9
+++++++++++++ finished +++++++++++++++
