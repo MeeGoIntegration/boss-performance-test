@@ -1,0 +1,18 @@
+BOSS Performance Test
+====================================================
+This project is structured as follows
+
+  .
+  |-cfg     : test config files
+  |-results : test result data <NOTICE: so far we haven't use it eigther>
+
+
+TODO
+
+Modify those config files in /cfg as following from your requirements
+I think you need to modify followint values currently.
+engine_logger => <CURRENT_DIR>/persist_logger
+
+How TO RUN
+./RUN_TEST 100
+ruby ./analyze_results.rb <log_dir>
