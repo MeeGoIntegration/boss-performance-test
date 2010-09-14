@@ -24,45 +24,59 @@
 
 module Ruote
 
-  #
-  # A helper logger for quickstart examples.
-  #
-  class PersistLogger
+    INTERESTING_ACTIONS = ["launch", "terminated", "dispatch", "receive"]
 
-    def initialize (context)
+    #
+    # A helper logger for quickstart examples.
+    #
+    class PersistLogger
 
-      @context = context
-      @context.worker.subscribe(:all, self) if @context.worker
+        def initialize (*opts)
 
-    end
+            context, log_path = opts 
+            
+            log_path = "/tmp/boss_performance_test" if log_path.nil?
+            @log_path = log_path 
+            if test ?d, @log_path
+                # delete all files in @log_path
+                File.delete(*Dir[@log_path + "/*"])
+            else
+                Dir.mkdir(@log_path)
+            end
+            #lp @log_path
 
-    def notify (msg)
-
-      #puts "+++++++++++++++++notify+++++++++++++++++++"
-      #p msg
-      
-      wfid = msg["wfid"] || (msg["fei"] && msg["fei"]["wfid"])
-      #puts "++++++++++++wfid is #{wfid}";
-
-      return unless wfid
-      
-      msgs = []
-      file = "/var/boss/boss_scripts/#{wfid}.msgs"
-
-      if File.exist?(file) 
-        File.open(file, "r+") do |f|
-          msgs = Marshal.load(f)  
-          f.rewind
-          msgs << msg
-          Marshal.dump(msgs, f)
+            @context = context
+            @context.worker.subscribe(:all, self) if @context.worker
+            @msgs_h = Hash.new
         end
-      else
-        #puts "++++++++++++file not exist++++++++++"
-        msgs << msg
-        File.open(file, "w") do |f|
-          Marshal.dump(msgs, f)
-        end       
-      end
+
+        def notify (msg)
+
+            #puts "+++++++++++++++++notify+++++++++++++++++++"
+            #p msg
+
+            wfid = msg["wfid"] || (msg["fei"] && msg["fei"]["wfid"])
+            #puts "++++++++++++wfid is #{wfid}";
+
+            return unless wfid
+
+            return unless INTERESTING_ACTIONS.include?(msg["action"])
+
+            # cache msg
+            @msgs_h[wfid] = Array.new if @msgs_h[wfid].nil?
+            @msgs_h[wfid] << msg
+
+            return unless msg["action"] == "terminated"
+
+            # persist msgs to file "wfid.msgs"
+            file = @log_path + "/#{wfid}.msgs"
+
+            File.open(file, "w") do |f|
+                #puts "+++++++++ write to #{file}"
+                Marshal.dump(@msgs_h[wfid], f)
+                @msgs_h.delete(wfid)
+            end
+
+        end
     end
-  end
 end
