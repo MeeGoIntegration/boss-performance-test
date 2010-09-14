@@ -5,6 +5,8 @@ require 'ruote'
 require 'parsedate'
 
 $time_data = {}
+$time_data["start"] = Time.now
+$time_data["end"] = Time.local(1970, 1, 1)
 
 def analyze_time_data(path)
     Dir["#{path}/*.msgs"].each do |file|
@@ -24,6 +26,10 @@ def statistics_time_data()
     #p parti_durations
     
     puts
+    puts "+++++ time statistics data: test case"
+    puts "Total: #{$time_data['duration']}"
+
+    puts
     puts "+++++ time statistics data: processes"
     array_sum_and_aver(proc_durations, true)
 
@@ -40,6 +46,11 @@ def collect_durations()
     parti_durations = {}
 
     $time_data.values.each do |wfid_h|
+        # filter out "start/end/duration"
+        unless wfid_h.class == Hash 
+            next
+        end
+
         proc_durations << wfid_h["duration"]
         
         wfid_h.each do |k, fei_h|
@@ -77,6 +88,7 @@ end
 
 # $parti_data format
 # {
+#   "start"=>"xxx"
 #   wfid1=>{
 #            "start"=>"xxx"
 #            fei1=>{
@@ -95,20 +107,32 @@ end
 #   wfidn=>{
 #           ......
 #          }
+#   "end"=>"xxx"
+#   "duration"=>"xxx"
 # }
 def collect_time_data(msgs)
     
     wfid = nil
     h = {} # it's the wfidn harsh part
+    start_min = $time_data["start"]
+    end_max = $time_data["end"]
     
     msgs.each do |msg|
         case
             when msg["action"] == "launch"
-                h["start"] = Time.local(*ParseDate.parsedate(msg["put_at"]))
+                t = Time.local(*ParseDate.parsedate(msg["put_at"]))
+                h["start"] = t
+                if t < start_min
+                  start_min = t
+                end
                 wfid = msg["wfid"]
 
             when msg["action"] == "terminated"
-                h["end"] = Time.local(*ParseDate.parsedate(msg["put_at"]))
+                t = Time.local(*ParseDate.parsedate(msg["put_at"]))
+                h["end"] = t
+                if t > end_max
+                    end_max = t
+                end
 
             when msg["action"] == "dispatch"
                 # only set parti_name when "receive" action
@@ -137,10 +161,15 @@ def collect_time_data(msgs)
     h["duration"] = h["end"] - h["start"]
 
     $time_data[wfid] = h
+
+    $time_data["start"] = start_min
+    $time_data["end"] = end_max
+    $time_data["duration"] = end_max - start_min
 end
 
 
 #test here
 analyze_time_data(ARGV[0])
 
+puts
 puts "++++++++++++ finished +++++++++++++++"
