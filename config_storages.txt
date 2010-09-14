@@ -1,7 +1,0 @@
-{
-  "fs" => {"name" => "fs", "class" => "Ruote::FsStorage.new('/var/boss/tmp')"},
-  "hs" => {"name" => "hs", "class" => "Ruote::FsStorage.new('/var/boss/tmp')"},
-  "dbs" => {"name" => "dbs", "class" => "Ruote::FsStorage.new('/var/boss/tmp')"},
-  "ms" => {"name" => "ms", "class" => "Ruote::FsStorage.new('/var/boss/tmp')"}
-}
-  

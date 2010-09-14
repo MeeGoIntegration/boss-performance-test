@@ -16,7 +16,7 @@ $config = nil
 
 
 def load_config
-  file = File.new("config_test.txt")
+  file = File.new("./cfg/cfg_test")
   $config = eval(file.read)
   #p $config if $debug
 end
