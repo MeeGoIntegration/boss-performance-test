@@ -15,4 +15,3 @@ engine_logger => <CURRENT_DIR>/persist_logger
 
 How TO RUN
 ./RUN_TEST 100
-ruby ./analyze_results.rb <log_dir>

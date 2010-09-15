@@ -37,12 +37,13 @@ pdef_1 = {
     "definition": """
         Ruote.process_definition :name => 'test_sequence' do
           sequence do
-            sizer
+            blocker
           end
         end
       """,
     "fields" : {
-        "version" : "1"
+        "version" : "1",
+	"thread_count" : thread_count
         }
     }
 
@@ -58,7 +59,8 @@ pdef_2 = {
         end
       """,
     "fields" : {
-        "version" : "1"
+        "version" : "1",
+        "thread_count" : thread_count
         }
     }
 
@@ -78,6 +80,7 @@ class RequestThread(threading.Thread):
         self._id = id
         self._pdef = pdef
     def run(self):
+        #print "thread_count: "+str(pdef["fields"]["thread_count"])
         #print "version: "+str(pdef["fields"]["version"])
         msg = amqp.Message(json.dumps(pdef))
         msg.properties["delivery_mode"] = 2
