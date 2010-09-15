@@ -1,5 +1,5 @@
 {
-  "engine_logger" => ['/home/weifeyao/boss/demo/persist_logger', 'Ruote::PersistLogger'],
+  "engine_logger" => ['/home/weifeyao/boss/test/persist_logger', 'Ruote::PersistLogger'],
   "storage_conf_file" => "./cfg/cfg_storages",
   "storage" => "fs",
   "participants_conf_file" => "./cfg/cfg_participants",

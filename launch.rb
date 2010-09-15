@@ -12,13 +12,18 @@ require 'ruote-amqp'
 
 $debug = false
 $engine = nil
-$config = nil
+$cfg = nil
+$msg_log_dir = "./.results_msg"
 
+if ARGV.size > 0
+  $msg_log_dir = ARGV[0]
+end
 
 def load_config
   file = File.new("./cfg/cfg_test")
-  $config = eval(file.read)
-  #p $config if $debug
+  $cfg = eval(file.read)
+  #p $cfg if $debug
+  
 end
 
 #  engine = Ruote::Engine.new(
@@ -30,15 +35,16 @@ end
 
 
 def prepare_engine
-  file = File.new($config['storage_conf_file'])
+  file = File.new($cfg['storage_conf_file'])
   storages = eval(file.read)
-  if $config['storage']
-    storage = storages[$config['storage']]
+  if $cfg['storage']
+    storage = storages[$cfg['storage']]
     #p storage['class']
     $engine = Ruote::Engine.new(Ruote::Worker.new(eval(storage['class'])))
     #$engine = Ruote::Engine.new(Ruote::Worker.new(Ruote::FsStorage.new('/var/boss/tmp')))
-    #p $config['engine_logger']
-    $engine.add_service('s_logger', $config['engine_logger'][0], $config['engine_logger'][1]) if $config['engine_logger']
+    #p $cfg['engine_logger']
+    #p $cfg['engine_logger'][2]
+    $engine.add_service('s_logger', $cfg['engine_logger'][0], $cfg['engine_logger'][1], $msg_log_dir) if $cfg['engine_logger']
     #$engine.add_service('s_logger', '/home/weifeyao/boss/demo/persist_logger', 'Ruote::PersistLogger')
     #$engine.add_service('s_logger', '/home/weifeyao/boss/boss-test/ruote/ruote/lib/ruote/log/test_logger', 'Ruote::TestLogger')
   end
@@ -49,10 +55,10 @@ def prepare_receiver
 end
 
 def prepare_participants
-  file = File.new($config['participants_conf_file'])
+  file = File.new($cfg['participants_conf_file'])
   pars = eval(file.read)
-  if $config['participants']
-    $config['participants'].each{
+  if $cfg['participants']
+    $cfg['participants'].each{
       |name|
       participant = pars[name]
       #p participant
@@ -69,10 +75,10 @@ load_config()
 prepare_engine()
 prepare_receiver()
 
-AMQP.settings[:host] = $config['amqp']['host']
-AMQP.settings[:user] = $config['amqp']['user']
-AMQP.settings[:pass] = $config['amqp']['pass']
-AMQP.settings[:vhost] = $config['amqp']['vhost']
+AMQP.settings[:host] = $cfg['amqp']['host']
+AMQP.settings[:user] = $cfg['amqp']['user']
+AMQP.settings[:pass] = $cfg['amqp']['pass']
+AMQP.settings[:vhost] = $cfg['amqp']['vhost']
 #AMQP.logging = config['amqp']['logging']
 
 # This spawns a thread which listens for amqp responses
