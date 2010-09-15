@@ -102,6 +102,23 @@ class DeveloperParticipant
   end
 end
 
+# A local participant for threads pressure testing
+class ThreadTest
+    
+    @@count = 0
+
+    def consume(workitem)
+        
+        @@count += 1
+        
+        until @@count >= workitem["thread_count"] do
+            sleep 0.5
+        end
+        
+        reply_to_engine(workitem)
+    end
+end
+
 $engine.register_participant 'developer', DeveloperParticipant
 
 #puts "everything is OK..." if $debug
