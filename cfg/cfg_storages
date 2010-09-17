@@ -1,7 +1,7 @@
 {
-  "fs" => {"name" => "fs", "class" => "Ruote::FsStorage.new('/var/boss/tmp')"},
-  "hs" => {"name" => "hs", "class" => "Ruote::FsStorage.new('/var/boss/tmp')"},
-  "dbs" => {"name" => "dbs", "class" => "Ruote::FsStorage.new('/var/boss/tmp')"},
-  "ms" => {"name" => "ms", "class" => "Ruote::FsStorage.new('/var/boss/tmp')"}
+  "fs" => {"name" => "fs", "class" => "Ruote::FsStorage.new('/tmp/boss')"},
+  "hs" => {"name" => "hs", "class" => "Ruote::FsStorage.new('/tmp/boss')"},
+  "dbs" => {"name" => "dbs", "class" => "Ruote::FsStorage.new('/tmp/boss')"},
+  "ms" => {"name" => "ms", "class" => "Ruote::FsStorage.new('/tmp/boss')"}
 }
   

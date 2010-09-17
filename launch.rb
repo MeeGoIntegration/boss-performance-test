@@ -40,12 +40,13 @@ def prepare_engine
     if $cfg['storage']
         storage = storages[$cfg['storage']]
         #p storage['class']
-        $engine = Ruote::Engine.new(Ruote::Worker.new(eval(storage['class'])))
-        #$engine = Ruote::Engine.new(Ruote::Worker.new(Ruote::FsStorage.new('/var/boss/tmp')))
+        #$engine = Ruote::Engine.new(Ruote::Worker.new(eval(storage['class'])))
+        $engine = Ruote::Engine.new(Ruote::Worker.new(Ruote::FsStorage.new('/tmp/boss/tmp')))
         #p $cfg['engine_logger']
         #p $cfg['engine_logger'][2]
-        $engine.add_service('s_logger', $cfg['engine_logger'][0], $cfg['engine_logger'][1], $msg_log_dir) if $cfg['engine_logger']
-        #$engine.add_service('s_logger', '/home/weifeyao/boss/demo/persist_logger', 'Ruote::PersistLogger')
+        #$engine.add_service('s_logger', $cfg['engine_logger'][0], $cfg['engine_logger'][1], $msg_log_dir) if $cfg['engine_logger']
+        $engine.add_service('s_logger', '/home/victoliu/work/git/boss-performance-test/dbm_logger', 'Ruote::DBMLogger')
+        #$engine.add_service('s_logger', '/home/victoliu/work/git/boss-performance-test/simple_logger', 'Ruote::SimpleLogger')
         #$engine.add_service('s_logger', '/home/weifeyao/boss/boss-test/ruote/ruote/lib/ruote/log/test_logger', 'Ruote::TestLogger')
     end
 end
@@ -120,10 +121,13 @@ class ThreadTest
 
     def consume(workitem)
         @@count += 1
+        tmp = 0
         #puts "====consume..."
         #p workitem
         until @@count >= workitem.fields['thread_count'] do
-            #puts "waiting #{@@count}"
+            puts "waiting #{@@count}" if @@count != tmp 
+            tmp = @@count
+            
             sleep 2
         end
         puts "--------------current thread count: #{Thread.list.size()}-------------------"
