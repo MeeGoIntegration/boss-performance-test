@@ -32,8 +32,8 @@ module Ruote
     class PersistLogger
         @@my_count = -1
         @@process_count = 0
-        @@start_time = Time.now.utc
-        @@end_time = Time.now.utc
+        @@start_time = Time.now
+        @@end_time = Time.now
 
         def initialize (*opts)
 
@@ -74,7 +74,7 @@ module Ruote
                 @@my_count = @@my_count + 1
                 @@process_count = @@process_count + 1
                 if @@my_count == 1
-                    @@start_time = Time.now.utc
+                    @@start_time = Time.now
                     puts "Start Time: #{@@start_time} | #{@@start_time - @@end_time}"
                     my_file = File.new("./LOG",'a')
                     my_file.write(@@start_time)
@@ -89,7 +89,7 @@ module Ruote
             if msg["action"] == "terminated"
                 @@my_count = @@my_count - 1
                 if @@my_count == 0
-                    @@end_time = Time.now.utc
+                    @@end_time = Time.now
                     #@@my_count == -1
                     puts "------------------------------"
                     p @@start_time
@@ -104,7 +104,7 @@ module Ruote
                     my_file.write("\n")
                     my_file.write("-----------------------------------------------\n")
                     my_file.close
-                    system("top -n 1 -b >> ./top_stat")
+                    #system("top -n 1 -b >> ./top_stat")
                     #AMQP.stop()
                     #AMQP.start()
                     #@channels = AMQP::Client.channels()

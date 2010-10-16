@@ -97,13 +97,14 @@ for i in range(thread_count):
     pdef["fields"]["version"] = str(j)
     t = RequestThread(j, pdef)
     t.run()
-    if j % 1000 == 0:
+    if j % 5000 == 0:
         print "---------------------Sleeping-------------------------"
         time.sleep(3)
         while (not os.access("./test_over", os.F_OK)):
             time.sleep(1)
         os.remove("./test_over")
         print "------------------------------------------------------"
+        time.sleep(10)
 
 def test_over (msg_log_dir):
     c = len(os.listdir(msg_log_dir))

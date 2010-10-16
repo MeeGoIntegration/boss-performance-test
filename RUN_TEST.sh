@@ -11,6 +11,9 @@ then
 $1 = 1
 fi
 
+echo "Start atop monitor"
+nohup xterm -T ATOP -e "rm -rf /tmp/atop.raw && atop -w /tmp/atop.raw 5" 2>/dev/null &
+
 echo "Start a workflow engine..."
 nohup xterm -T LAUNCH -e "ruby launch.rb $2" 2>/dev/null &
 #sleep 1
