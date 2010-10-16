@@ -40,14 +40,8 @@ def prepare_engine
     if $cfg['storage']
         storage = storages[$cfg['storage']]
         #p storage['class']
-        #$engine = Ruote::Engine.new(Ruote::Worker.new(eval(storage['class'])))
-        $engine = Ruote::Engine.new(Ruote::Worker.new(Ruote::FsStorage.new('/tmp/boss/tmp')))
-        #p $cfg['engine_logger']
-        #p $cfg['engine_logger'][2]
-        #$engine.add_service('s_logger', $cfg['engine_logger'][0], $cfg['engine_logger'][1], $msg_log_dir) if $cfg['engine_logger']
-        $engine.add_service('s_logger', '/home/victoliu/work/git/boss-performance-test/dbm_logger', 'Ruote::DBMLogger')
-        #$engine.add_service('s_logger', '/home/victoliu/work/git/boss-performance-test/simple_logger', 'Ruote::SimpleLogger')
-        #$engine.add_service('s_logger', '/home/weifeyao/boss/boss-test/ruote/ruote/lib/ruote/log/test_logger', 'Ruote::TestLogger')
+        $engine = Ruote::Engine.new(Ruote::Worker.new(eval(storage['class'])))
+        $engine.add_service('s_logger', './persist_logger', 'Ruote::PersistLogger', $msg_log_dir)
     end
 end
 
@@ -144,10 +138,25 @@ class ThreadTest
     end
 end
 
-$engine.register_participant 'developer', DeveloperParticipant
-$engine.register_participant 'blocker', ThreadTest
+#$engine.register_participant 'developer', DeveloperParticipant
+#$engine.register_participant 'blocker', ThreadTest
 
 #puts "everything is OK..." if $debug
+
+#xThread = Thread.new {
+#    time_count = 0
+#    while true
+#        sleep 1
+#        if File::exists?("./test_over")
+#            time_count = time_count + 1
+#            if time_count > 10
+#                AMQP.reset
+#                time_count = 0
+#            end
+#        end
+#    end
+#}
+
 
 $engine.join()
 

@@ -23,9 +23,9 @@ if  argv_count > 1:
     thread_count = int(sys.argv[1])
     if thread_count < 1:
         thread_count = 1
-    elif thread_count > 10000:
+    #elif thread_count > 1000000:
         #print "> 1000 : "+str(thread_count)
-        thread_count = 10000
+        #thread_count = 1000000
         
 if argv_count > 2:
     process_def = int(sys.argv[2])
@@ -37,7 +37,8 @@ pdef_1 = {
     "definition": """
         Ruote.process_definition :name => 'test_sequence' do
           sequence do
-            blocker
+            sizer
+            resizer
           end
         end
       """,
@@ -67,12 +68,7 @@ pdef_2 = {
 # Connect to the amqp server
 conn = amqp.Connection(host="amqpvm", userid="ruote",
                        password="ruote", virtual_host="ruote-test", insist=False)
-chan = conn.channel()
-
-# Encode the message as json
-#print "Thread: "+str(thread_count)
-#print "pdef: "+str(process_def)
-
+#chan = conn.channel()
 
 class RequestThread(threading.Thread):
     def __init__(self,id, pdef):
@@ -80,11 +76,11 @@ class RequestThread(threading.Thread):
         self._id = id
         self._pdef = pdef
     def run(self):
-        #print "thread_count: "+str(pdef["fields"]["thread_count"])
-        #print "version: "+str(pdef["fields"]["version"])
+        chan = conn.channel()
         msg = amqp.Message(json.dumps(pdef))
         msg.properties["delivery_mode"] = 2
         chan.basic_publish(msg, exchange='', routing_key='ruote_workitems')
+        chan.close()
         print str(self._id)+" : OK"
 
 
@@ -92,6 +88,8 @@ pdef = pdef_1
 if process_def == 2:
     pdef = pdef_2
 
+if os.access("./test_over", os.F_OK):
+    os.remove("./test_over")
 
 for i in range(thread_count):
     j = i + 1
@@ -99,6 +97,13 @@ for i in range(thread_count):
     pdef["fields"]["version"] = str(j)
     t = RequestThread(j, pdef)
     t.run()
+    if j % 1000 == 0:
+        print "---------------------Sleeping-------------------------"
+        time.sleep(3)
+        while (not os.access("./test_over", os.F_OK)):
+            time.sleep(1)
+        os.remove("./test_over")
+        print "------------------------------------------------------"
 
 def test_over (msg_log_dir):
     c = len(os.listdir(msg_log_dir))
@@ -107,29 +112,7 @@ def test_over (msg_log_dir):
     return False
 
 def monitor_test():
-    #f = open("./cfg/cfg_test")
-    #p = eval(f.read())
-    #msg_log_dir = p['engine_logger'][2]
-    print "I am waiting for the test result..."
-    while(test_over(msg_log_dir) == False):
-        time.sleep(1)
-    
-    os.system("ruby ./analyze_results.rb "+msg_log_dir+" > ./results/test_result_"+str(thread_count))
-    print "please check test result: ./results/test_result_"+str(thread_count)
     raw_input("Enter to close this window...")
 
+conn.close()
 monitor_test()
-#msg = amqp.Message(json.dumps(pdef))
-## delivery_mode=2 is persistent
-#msg.properties["delivery_mode"] = 2
-#
-## Publish the message.
-#
-## Notice that this is sent to the anonymous/'' exchange (which is
-## different to 'amq.direct') with a routing_key for the queue
-#chan.basic_publish(msg, exchange='', routing_key='ruote_workitems')
-#
-## and wrap up.
-#chan.close()
-#conn.close()
-

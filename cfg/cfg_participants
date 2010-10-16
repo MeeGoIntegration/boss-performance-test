@@ -1,7 +1,5 @@
 {
-  "builder" => {"name" => "builder", "class" => "RuoteAMQP::Participant", "command" => "/obs/build", "queue" => "obs"},
-  "imager" => {"name" => "imager", "class" => "RuoteAMQP::Participant", "command" => "/img/image", "queue" => "img"},
   "sizer" => {"name" => "sizer", "class" => "RuoteAMQP::Participant", "command" => "/not/user", "queue" => "sizer"},
-  "tester" => {"name" => "tester", "class" => "RuoteAMQP::Participant", "command" => "/cita/test", "queue" => "cita"}
+  "resizer" => {"name" => "resizer", "class" => "RuoteAMQP::Participant", "command" => "/not/user", "queue" => "resizer"}
 }
   

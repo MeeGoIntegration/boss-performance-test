@@ -18,9 +18,9 @@ class MyPart(Participant):
     def consume(self):
         wi = self.workitem
         MyPart.my_count = MyPart.my_count + 1
-        print "[ver: "+wi.fields()['version']+" | "+str(MyPart.my_count)+"]"
+        print "r[ver: "+wi.fields()['version']+" | "+str(MyPart.my_count)+"]"
         wi.set_result(True)
 
 print "Started a python participant"
-p = MyPart(ruote_queue="sizer", amqp_host="amqpvm", amqp_vhost="ruote-test")
+p = MyPart(ruote_queue="resizer", amqp_host="amqpvm", amqp_vhost="ruote-test")
 p.run()

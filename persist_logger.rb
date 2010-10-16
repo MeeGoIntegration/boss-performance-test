@@ -30,6 +30,10 @@ module Ruote
     # A helper logger for quickstart examples.
     #
     class PersistLogger
+        @@my_count = -1
+        @@process_count = 0
+        @@start_time = Time.now.utc
+        @@end_time = Time.now.utc
 
         def initialize (*opts)
 
@@ -37,12 +41,12 @@ module Ruote
             
             log_path = "/tmp/boss_performance_test" if log_path.nil?
             @log_path = log_path 
-            if test ?d, @log_path
+            #if test ?d, @log_path
                 # delete all files in @log_path
-                File.delete(*Dir[@log_path + "/*"])
-            else
-                Dir.mkdir(@log_path)
-            end
+                #File.delete(*Dir[@log_path + "/*"])
+            #else
+                #Dir.mkdir(@log_path)
+            #end
             #lp @log_path
 
             @context = context
@@ -55,27 +59,73 @@ module Ruote
             #puts "+++++++++++++++++notify+++++++++++++++++++"
             #p msg
 
-            wfid = msg["wfid"] || (msg["fei"] && msg["fei"]["wfid"])
+            #wfid = msg["wfid"] || (msg["fei"] && msg["fei"]["wfid"])
             #puts "++++++++++++wfid is #{wfid}";
+            #p Time.now.utc
+            #return unless wfid
 
-            return unless wfid
-
-            return unless INTERESTING_ACTIONS.include?(msg["action"])
+            #return unless INTERESTING_ACTIONS.include?(msg["action"])
 
             # cache msg
-            @msgs_h[wfid] = Array.new if @msgs_h[wfid].nil?
-            @msgs_h[wfid] << msg
-
-            return unless msg["action"] == "terminated"
-
-            # persist msgs to file "wfid.msgs"
-            file = @log_path + "/#{wfid}.msgs"
-
-            File.open(file, "w") do |f|
-                #puts "+++++++++ write to #{file}"
-                Marshal.dump(@msgs_h[wfid], f)
-                @msgs_h.delete(wfid)
+            #@msgs_h[wfid] = Array.new if @msgs_h[wfid].nil?
+            #@msgs_h[wfid] << msg
+            #puts msg["action"]
+            if msg["action"] == "launch"
+                @@my_count = @@my_count + 1
+                @@process_count = @@process_count + 1
+                if @@my_count == 1
+                    @@start_time = Time.now.utc
+                    puts "Start Time: #{@@start_time} | #{@@start_time - @@end_time}"
+                    my_file = File.new("./LOG",'a')
+                    my_file.write(@@start_time)
+                    my_file.write(" | ")
+                    my_file.write(@@start_time - @@end_time)
+                    my_file.write("\n")
+                    my_file.close
+                end
             end
+
+            #return unless msg["action"] == "terminated"
+            if msg["action"] == "terminated"
+                @@my_count = @@my_count - 1
+                if @@my_count == 0
+                    @@end_time = Time.now.utc
+                    #@@my_count == -1
+                    puts "------------------------------"
+                    p @@start_time
+                    puts "#{@@end_time} | #{@@end_time-@@start_time}"
+                    p @@process_count
+                    my_file = File.new("./LOG", 'a')
+                    my_file.write(@@end_time)
+                    my_file.write("\n")
+                    my_file.write(@@process_count)
+                    my_file.write(" | ")
+                    my_file.write(@@end_time-@@start_time)
+                    my_file.write("\n")
+                    my_file.write("-----------------------------------------------\n")
+                    my_file.close
+                    system("top -n 1 -b >> ./top_stat")
+                    #AMQP.stop()
+                    #AMQP.start()
+                    #@channels = AMQP::Client.channels()
+                    #p @channels
+                    #channels.each{|k,v| p k; p v} if channels
+                    #puts "CHANNEL" if @channels
+
+                    File.open("./test_over", 'w')
+                    puts "------------------------------"
+                end
+            end
+            # persist msgs to file "wfid.msgs"
+            #file = @log_path + "/#{wfid}.msgs"
+            #file = @log_path+"/tmp.msgs"
+
+            #File.open(file, "w") do |f|
+                #puts "+++++++++ write to #{file}"
+                #Marshal.dump(@msgs_h[wfid], f)
+                #@msgs_h.delete(wfid)
+            #end
+            #p Time.now.utc
 
         end
     end

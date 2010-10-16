@@ -3,7 +3,7 @@
   "storage_conf_file" => "./cfg/cfg_storages",
   "storage" => "fs",
   "participants_conf_file" => "./cfg/cfg_participants",
-  "participants" => ["builder", "imager", "sizer", "tester"],
+  "participants" => ["sizer", "resizer"],
   "amqp" => {
               "host" => "amqpvm",
               "user" => "ruote",
