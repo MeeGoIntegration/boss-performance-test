@@ -30,6 +30,7 @@ module Ruote
     # A helper logger for quickstart examples.
     #
     class PersistLogger
+        @@it = 0
         @@my_count = -1
         @@process_count = 0
         @@start_time = Time.now
@@ -75,8 +76,10 @@ module Ruote
                 @@process_count = @@process_count + 1
                 if @@my_count == 1
                     @@start_time = Time.now
-                    puts "Start Time: #{@@start_time} | #{@@start_time - @@end_time}"
+                    @@it += 1
+                    puts "Iteration #{@@it}: start Time: #{@@start_time} | #{@@start_time - @@end_time}"
                     my_file = File.new("./LOG",'a')
+                    my_file.write("-------- Iteration #{@@it} --------\n")
                     my_file.write(@@start_time)
                     my_file.write(" | ")
                     my_file.write(@@start_time - @@end_time)
@@ -102,7 +105,6 @@ module Ruote
                     my_file.write(" | ")
                     my_file.write(@@end_time-@@start_time)
                     my_file.write("\n")
-                    my_file.write("-----------------------------------------------\n")
                     my_file.close
                     #system("top -n 1 -b >> ./top_stat")
                     #AMQP.stop()
