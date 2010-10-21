@@ -105,7 +105,7 @@ module Ruote
                     my_file = File.new("./LOG", 'a')
                     my_file.write(@@end_time)
                     my_file.write("\n")
-                    my_file.write("total: #{@@process_count}")
+                    my_file.write("total workflows: #{@@process_count}")
                     my_file.write("\n")
                     my_file.write("iteration duration: #{@@end_time-@@start_time}")
                     my_file.write("\n")
