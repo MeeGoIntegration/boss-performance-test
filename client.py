@@ -5,10 +5,6 @@ import threading
 import time
 import os
 
-#if len(sys.argv) != 2:
-#    print "Usage: python launch.py <version>"
-#    sys.exit(1)
-
 # Specify a process definition
 print "usage: python client.py [load(integer)] [iteration(integer)]"
 print "       note: it's set as 1 if missing iteration option"
@@ -17,7 +13,6 @@ print "e.g. python client.py 500 10"
 thread_count = 1
 repeat_count = 1
 process_def = 1
-msg_log_dir = "./.results_msg"
 version = 1
 
 argv_count = len(sys.argv)
@@ -100,9 +95,15 @@ for n in range(repeat_count):
         time.sleep(1)
     os.remove("./test_over")
     print "------------------------------------------------------"
+    #os.system('grep -inr "dispatched\\"" /tmp/boss 2>/dev/null |wc -l >>/tmp/boss/dispatched_msg_num')
     time.sleep(10)
+    #os.system('grep -inr "dispatched\\"" /tmp/boss 2>/dev/null |wc -l >>/tmp/boss/dispatched_msg_num')
+    #os.system('echo "">>/tmp/boss/dispatched_msg_num')
 
 def monitor_test():
+    f = open("/tmp/boss.pipe", "w")
+    f.write("finish")
+    f.close()
     raw_input("Enter to close this window...")
 
 conn.close()

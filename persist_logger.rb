@@ -22,6 +22,7 @@
 # Made in Japan.
 #++
 
+
 module Ruote
 
     INTERESTING_ACTIONS = ["launch", "terminated", "dispatch", "receive"]
@@ -53,6 +54,7 @@ module Ruote
             @context = context
             @context.worker.subscribe(:all, self) if @context.worker
             @msgs_h = Hash.new
+
         end
 
         def notify (msg)
@@ -72,6 +74,7 @@ module Ruote
             #@msgs_h[wfid] << msg
             #puts msg["action"]
             if msg["action"] == "launch"
+                #puts "#{Thread.list.size} ",
                 @@my_count = @@my_count + 1
                 @@process_count = @@process_count + 1
                 if @@my_count == 1
@@ -81,8 +84,8 @@ module Ruote
                     my_file = File.new("./LOG",'a')
                     my_file.write("-------- Iteration #{@@it} --------\n")
                     my_file.write(@@start_time)
-                    my_file.write(" | ")
-                    my_file.write(@@start_time - @@end_time)
+                    #my_file.write(" | ")
+                    #my_file.write(@@start_time - @@end_time)
                     my_file.write("\n")
                     my_file.close
                 end
@@ -90,6 +93,7 @@ module Ruote
 
             #return unless msg["action"] == "terminated"
             if msg["action"] == "terminated"
+                #puts "#{Thread.list.size} ",
                 @@my_count = @@my_count - 1
                 if @@my_count == 0
                     @@end_time = Time.now
@@ -101,9 +105,9 @@ module Ruote
                     my_file = File.new("./LOG", 'a')
                     my_file.write(@@end_time)
                     my_file.write("\n")
-                    my_file.write(@@process_count)
-                    my_file.write(" | ")
-                    my_file.write(@@end_time-@@start_time)
+                    my_file.write("total: #{@@process_count}")
+                    my_file.write("\n")
+                    my_file.write("iteration duration: #{@@end_time-@@start_time}")
                     my_file.write("\n")
                     my_file.close
                     #system("top -n 1 -b >> ./top_stat")
@@ -116,6 +120,8 @@ module Ruote
 
                     File.open("./test_over", 'w')
                     puts "------------------------------"
+                    puts "Thread count: #{Thread.list.size}"
+                    #puts "Thread list: #{Thread.list}"
                 end
             end
             # persist msgs to file "wfid.msgs"
