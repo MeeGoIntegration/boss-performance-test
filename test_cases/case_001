@@ -1,0 +1,24 @@
+{
+  "name" = "test case name",
+  "channel" => "single | multiple",  #client
+  "load" => 1000,  #client
+  "iteration" => 5,  #client
+  "worker" => 1, #engine
+  "storage" => "FS", #engine & global config [reference to global config for detail]
+  "workflow" => {
+    "definition" => """
+        Ruote.process_definition :name => 'test_sequence' do
+          sequence do
+            sizer
+            resizer
+          end
+        end
+      """,
+    "fields" => {
+        "version" : "1",
+	"thread_count" : thread_count
+        }
+    }, #client
+  "log" = "dir path", #engine, logger, analyze
+  "desc" => "to comments"
+}
