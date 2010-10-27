@@ -1,5 +1,0 @@
-{
-  "sizer" => {"name" => "sizer", "class" => "RuoteAMQP::Participant", "command" => "/not/user", "queue" => "sizer"},
-  "resizer" => {"name" => "resizer", "class" => "RuoteAMQP::Participant", "command" => "/not/user", "queue" => "resizer"}
-}
-  
