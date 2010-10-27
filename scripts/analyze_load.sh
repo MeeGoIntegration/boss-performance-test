@@ -1,17 +1,64 @@
 #!/usr/bin/sh
 
-echo "input argu:" $1 $2 $3
+function usage() {
+    echo "TBD"
+}
 
-raw=$1
-startt=$2
-endt=$3
-out_cpu=./cpu.data
-out_mem=./mem.data
-out_dsk=./dsk.data
+raw=""
+startt="00:00"
+endt="23:59"
+out="."
+out_cpu="${out}/cpu.load"
+out_mem="${out}/mem.load"
+out_dsk="${out}/dsk.load"
 touch $out_cpu $out_mem $out_dsk
 reg="\% ruby.*launch.rb\|^ATOP"
 
-# inject config patter into .atoprc to fit following regular expression
+if [ $# == 0 ];then
+    usage
+    exit 0
+fi
+
+while [ $# -gt 0 ]
+do
+    case $1 in 
+        "-h")
+            usage
+            exit 0
+           ;;
+        "-r")
+            if [ -e "$2" ];then
+                raw="$2"
+            else
+                echo "wrong atop raw data, check!"
+                exit 1
+            fi
+            shift 2
+            ;;
+        "-b")
+            startt=$2
+            shift 2
+            ;;
+        "-e")
+            endt=$2
+            shift 2
+            ;;  
+        "-o")
+            if [ -d "$2" ];then
+                out="$2"
+            else
+                echo "wrong output path, check!"
+            fi
+            shift 2
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac 
+done
+
+# inject config pattern into .atoprc to fit following regular expression
 if [ -e ~/.atoprc ];then
     mv -f ~/.atoprc ~/.atoprc.bak
 fi
