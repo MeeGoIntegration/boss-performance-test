@@ -6,27 +6,34 @@ require 'rubygems'
 require 'ruote'
 require 'ruote/storage/fs_storage'
 require 'ruote-amqp'
+require 'optparse'
 
-@participants
-@storage
-
-$debug = false
 $engine = nil
 $cfg = nil
-$msg_log_dir = "./.results_msg"
+$storage_name = nil
+$participant_names = nil
+$log_dir = "./.results_msg"
 
-if ARGV.size > 0
-    $msg_log_dir = ARGV[0]
-end
 
 def load_config
-    file = File.new("./cfg/cfg_test")
+    file = File.new("./global.config")
     $cfg = eval(file.read)
-    #p $cfg if $debug
+
+end
+
+def parse_options
+    OptionParser.new do |opt|
+        opt.banner = "Usage: workman.rb [options]"
+        opt.on('-s Storage') { |storage| p storage; $storage_name = storage}
+        opt.on('-l Log') { |log| p log; $log_dir = log}        
+        opt.on_tail("-h", "--help", "Show help") { puts opt; exit }
+        opt.parse!
+    end
 
 end
 
 load_config()
+parse_options()
 
 AMQP.settings[:host] = $cfg['amqp']['host']
 AMQP.settings[:user] = $cfg['amqp']['user']
@@ -34,17 +41,23 @@ AMQP.settings[:pass] = $cfg['amqp']['pass']
 AMQP.settings[:vhost] = $cfg['amqp']['vhost']
 #AMQP.logging = config['amqp']['logging']
 
-file = File.new($cfg['storage_conf_file'])
-storages = eval(file.read)
 if $cfg['storage']
-  storage = storages[$cfg['storage']]
-  worker = Ruote::Worker.new(Ruote::FsStorage.new('./.tmp', 's_logger' => ['./persist_logger', 'Ruote::PersistLogger', $msg_log_dir]))
-  worker.run
-
-  #$engine.add_service('s_logger', $cfg['engine_logger'][0], $cfg['engine_logger'][1], $msg_log_dir) if $cfg['engine_logger']
-  #$engine.add_service('s_logger', '/home/weifeyao/boss/test/git/boss-performance-test/dbm_logger', 'Ruote::DBMLogger')
+    storage_list = $cfg['storage']
+    #p storage_list
+    #p $storage_name
+    storage = storage_list[$storage_name]
+    worker = nil
+    if $cfg['engine_logger']
+        logger = $cfg['engine_logger']
+	#'./.tmp', 's_logger' => ['./persist_logger', 'Ruote::PersistLogger', $msg_log_dir]
+        worker = Ruote::Worker.new(eval(storage["class"]+".new('"+$log_dir+"', 's_logger'=>['"+logger['name']+"','"+logger['class']+"','"+logger['log']+"'])"))
+    else
+        worker = Ruote::Worker.new(eval(storage["class"]+".new('"+$log_dir+"')"))
+    end
+    
+    if worker != nil
+        worker.run
+    end
 end
 
-
-#/root/boss_scripts/test/analyze_results_v0.2.rb
 

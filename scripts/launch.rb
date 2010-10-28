@@ -6,23 +6,33 @@ require 'rubygems'
 require 'ruote'
 require 'ruote/storage/fs_storage'
 require 'ruote-amqp'
+require 'optparse'
 
-@participants
-@storage
-
-$debug = false
 $engine = nil
 $cfg = nil
-$msg_log_dir = "./.results_msg"
+$storage_name = nil
+$participant_names = nil
+$log_dir = "./.results_msg"
 
-if ARGV.size > 0
-    $msg_log_dir = ARGV[0]
-end
+#if ARGV.size > 0
+#    $msg_log_dir = ARGV[0]
+#end
 
 def load_config
-    file = File.new("./cfg/cfg_test")
+    file = File.new("./global.config")
     $cfg = eval(file.read)
-    #p $cfg if $debug
+    #p $cfg
+end
+
+def parse_options
+    OptionParser.new do |opt|
+        opt.banner = "Usage: launch.rb [options]"
+        opt.on('-s Storage') { |storage| p storage; $storage_name = storage}
+        opt.on('-l Log') { |log| p log; $log_dir = log}
+        opt.on('-p Participant names') { |par_name| p par_name; $participant_names = eval(par_name)}
+        opt.on_tail("-h", "--help", "Show help") { puts opt; exit }
+        opt.parse!
+    end
 
 end
 
@@ -34,31 +44,31 @@ end
 #end
 
 
-def prepare_engine
-    file = File.new($cfg['storage_conf_file'])
-    storages = eval(file.read)
+def init_engine
     if $cfg['storage']
-        storage = storages[$cfg['storage']]
+        storage_list = $cfg['storage']
+	#p storage_list
+	#p $storage_name
+        storage = storage_list[$storage_name]
         #p storage['class']
-        $engine = Ruote::Engine.new(Ruote::Worker.new(eval(storage['class'])))
-        $engine.add_service('s_logger', './persist_logger', 'Ruote::PersistLogger', $msg_log_dir)
+	#p $log_dir
+        $engine = Ruote::Engine.new(Ruote::Worker.new(eval(storage["class"]+".new('"+$log_dir+"')")))
+	if $cfg['engine_logger']
+	    logger = $cfg['engine_logger']
+            $engine.add_service('s_logger', logger['name'], logger['class'], logger['log'])
+	end
     end
 end
 
-def prepare_receiver
-
-end
-
-def prepare_participants
-    file = File.new($cfg['participants_conf_file'])
-    pars = eval(file.read)
-    if $cfg['participants']
-        $cfg['participants'].each{
+def register_participants
+    if $cfg['participant']
+        part_list = $cfg['participant']
+        $participant_names.each{
             |name|
-            participant = pars[name]
-            #p participant
-            $engine.register_participant(name, eval(participant["class"]),
-                                         :command => participant["command"], :queue => participant["queue"])
+            part = part_list[name]
+            #p part
+            $engine.register_participant(name, eval(part["class"]),
+                                         :command => part["command"], :queue => part["queue"])
         }
     end
 end
@@ -67,9 +77,10 @@ end
 
 
 load_config()
-prepare_engine()
-prepare_receiver()
+parse_options()
+init_engine()
 
+p $cfg['amqp']
 AMQP.settings[:host] = $cfg['amqp']['host']
 AMQP.settings[:user] = $cfg['amqp']['user']
 AMQP.settings[:pass] = $cfg['amqp']['pass']
@@ -82,83 +93,8 @@ RuoteAMQP::Receiver.new($engine, :launchitems => true)
 # This registers a general purpose 'remote' participant
 $engine.register_participant('remote', RuoteAMQP::Participant)
 
-prepare_participants()
+register_participants()
 
-
-# A local participant  
-class DeveloperParticipant
-    include Ruote::LocalParticipant
-
-    def initialize (opts)
-        @opts = opts
-    end
-    def consume (workitem)
-        puts "I am a native participant..."
-        sleep 2
-        reply_to_engine(workitem)
-    end
-    def cancel (fei, flavour)
-        # no need for an implementation, since consume replies immediately,
-        # never 'holding' a workitem
-    end
-end
-
-# A local participant for threads pressure testing
-class ThreadTest
-    include Ruote::LocalParticipant    
-    @@count = 0
-
-    def initialize (opts)
-        @opts = opts
-        #puts "init"
-    end
-
-    def consume(workitem)
-        @@count += 1
-        tmp = 0
-        #puts "====consume..."
-        #p workitem
-        until @@count >= workitem.fields['thread_count'] do
-            puts "waiting #{@@count}" if @@count != tmp 
-            tmp = @@count
-            
-            sleep 2
-        end
-        puts "--------------current thread count: #{Thread.list.size()}-------------------"
-        #if (workitem.fields['version'] == "1")
-            #puts "+++++++++++++++++++++++"
-            #Thread.list.each {|t| p t}
-            #puts "+++++++++++++++++++++++"
-        #end
-        #puts "===============over #{@@count}"
-        reply_to_engine(workitem)
-    end
-    def cancel (fei, flavour)
-
-    end
-end
-
-#$engine.register_participant 'developer', DeveloperParticipant
-#$engine.register_participant 'blocker', ThreadTest
-
-#puts "everything is OK..." if $debug
-
-#xThread = Thread.new {
-#    time_count = 0
-#    while true
-#        sleep 1
-#        if File::exists?("./test_over")
-#            time_count = time_count + 1
-#            if time_count > 10
-#                AMQP.reset
-#                time_count = 0
-#            end
-#        end
-#    end
-#}
-
-
+puts "start engine..."
 $engine.join()
-
-#/root/boss_scripts/test/analyze_results_v0.2.rb
 
