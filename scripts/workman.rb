@@ -12,7 +12,7 @@ $engine = nil
 $cfg = nil
 $storage_name = nil
 $participant_names = nil
-$log_dir = "./.results_msg"
+$log_dir = nil
 
 
 def load_config
@@ -47,12 +47,14 @@ if $cfg['storage']
     #p $storage_name
     storage = storage_list[$storage_name]
     worker = nil
-    if $cfg['engine_logger']
+    storage_dir = $log_dir + "/storage"
+    p storage_dir
+    if not $cfg['engine_logger']
         logger = $cfg['engine_logger']
 	#'./.tmp', 's_logger' => ['./persist_logger', 'Ruote::PersistLogger', $msg_log_dir]
-        worker = Ruote::Worker.new(eval(storage["class"]+".new('"+$log_dir+"', 's_logger'=>['"+logger['name']+"','"+logger['class']+"','"+logger['log']+"'])"))
+        worker = Ruote::Worker.new(eval(storage["class"]+".new('"+storage_dir+"', 's_logger'=>['"+logger['name']+"','"+logger['class']+"','"+logger['log']+"'])"))
     else
-        worker = Ruote::Worker.new(eval(storage["class"]+".new('"+$log_dir+"')"))
+        worker = Ruote::Worker.new(eval(storage["class"]+".new('"+storage_dir+"')"))
     end
     
     if worker != nil

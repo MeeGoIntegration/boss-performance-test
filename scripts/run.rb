@@ -3,6 +3,30 @@
 
 ###################### Section: Function Definition ####################
 
+require 'optparse'
+
+$file = nil
+$out = nil
+$participants = Hash.new
+$pipe = false
+$config = false
+$global = false
+
+
+def parse_options
+    opt = OptionParser.new 
+    opt.banner = "Usage: rub.rb [options]"
+    opt.on('-c test config file') { |file| $file = file }
+    opt.on('-o output folder, also using as workarea') { |out| $out = out }
+    opt.on_tail('-h', 'show help') {puts opt; exit} 
+    opt.parse!
+    
+    if $file.nil?
+        puts opt
+        exit
+    end
+end
+
 $pids = Array.new
 
 # function to execute command in sub-process 
@@ -11,106 +35,29 @@ def launch_process(cmd, title)
     if not pid
         puts "launching process: #{title}"
         p cmd
-        exec('xterm')
+        #exec("xterm -T ccc -e \"ping www.baidu.com\"")
+        exec(cmd)
     end
     # add pid to pid list
     $pids.push(pid)
 end
 
 
-$file = false
-$config = false
-$global = false
-$out = false
-$worker = false
-$load = false
-$iteration = false
-$channel = false
-$workflow = false
-$participants = Hash.new
-$pipe = false
-
 # function to:
-#   - get and verify parameters from config files
+#   - verify config file
 #   - setup pipe between this script and client
 def preprocess()
-    # get config file name
-    if not ARGV.size == 1
-        puts "wrong argument number, only one test case config can be accepted"
-        exit
-    else
-        $file = ARGV[0]
-    end
-
-    # get config info
+    # parse options
+    parse_options()
+    
+    # verify config file 
     if not File.exist?($file)
         puts "file #{$file} does not exist, check its path!"
         exit
     end
-    f = File.open($file)
-    $config = eval(f.read)
-    #p $config
 
-    # get output folder
-    $out = $config['output']
-    if not File.directory?($out)
-        puts "wrong output path: #{$out}, check its path!"
-        exit
-    end
-
-    # get worker number
-    $worker = $config['worker']
-    if $worker < 1
-        puts "wrong worker number: #{$worker}, check!"
-        exit
-    end
-
-    # get load number
-    $load = $config['load']
-    if $load < 1
-        puts "wrong load number: #{$load}, check!"
-        exit
-    end
-
-    # get iteration number
-    $iteration = $config['iteration']
-    if $iteration < 1
-        puts "wrong iteration number: #{$load}, check!"
-        exit
-    end
-    
-    # get channel
-    $channel = $config['channel']
-    if not $channel == "single" and not $channel == "multiple"  
-        puts "wrong channel: #{$channel}, check!"
-        exit
-    end
-
-    # get workflow
-    $workflow = $config['workflow']
-    if not $workflow.class == Hash
-        puts "wrong workflow: #{$workflow}, check!"
-        exit
-    end
-
-    # get global config info
-    $global = eval(File.open('global.config').read)
-
-    # get participants
-    $config['participant'].each do |par|
-        file = $global['participant'][par]['path']
-        p file
-        if not File.exist?(file)
-            puts "wrong participant: #{par}, check!"
-            exit
-        end
-        $participants[par] = file
-    end
-
-    
     # setup pipe
-    $pipe = "#{File.basename($file)}.pipe"
-    $pipe = "#{$out}/#{$pipe}" 
+    $pipe = "#{$out}/run.pipe" 
     if File.exist?($pipe)
         File.delete($pipe)
     end
@@ -119,65 +66,65 @@ def preprocess()
         puts "failed to create pipe: #{$pipe}, check!"
         exit
     end
+
+    # make storage directory
+    storage_dir = $out + "/storage"
+    if File.directory?(storage_dir)
+        `rm -rf #{storage_dir}`
+    end
+    `mkdir #{storage_dir}`
 end
 
 
 ###################### Section: Execution ####################
+
+#== parse options
+parse_options()
 
 #== preprocess
 preprocess()
 
 #== launch atop process
 atop_data = "#{$out}/atop.raw"
-cmd = "xterm -T atop -e \"rm -rf #{atop_data} && atop -w #{atop_data} 5\" 2>/dev/null &"
+cmd = "xterm -T atop -e \"atop -w #{atop_data} 5\" 2>/dev/null &"
 launch_process(cmd, 'atop')
 
-
 #== launch engine process
-cmd = "xterm -T engine -e \"ruby launch.rb #{$out}\" 2>/dev/null &"
+cmd = "xterm -T engine -e \"ruby ./launch.rb -c #{$file} -o #{$out}\" 2>/dev/null &"
 launch_process(cmd, 'engine')
 
-#== launch extra workers
-extra_worker = $worker - 1
-cnt = 1
-until cnt > extra_worker do
-    cmd = "xterm -T WORKMAN#{cnt} -e \"ruby workman.rb\" 2>/dev/null &" 
-    launch_process(cmd, "WORKMAN#{cnt}")
-    cnt += 1
-end
-
-
 #== launch participant processes
-$participants.each do |par, file|
-    cmd = "xterm -T #{par} -e \"python #{file}\" 2>/dev/null &"
-    launch_process(cmd, "participant: #{par}")
-end
-
+#$participants.each do |par, file|
+    cmd = "xterm -T sizer -e \"python participant_sizer.py\" 2>/dev/null &"
+    launch_process(cmd, "participant: sizer")
+    cmd = "xterm -T resizer -e \"python participant_resizer.py\" 2>/dev/null &"
+    launch_process(cmd, "participant: resizer")
+#end
 
 #== launch client process
 `sleep 3`
-cmd = "xterm -T client -e \"python client.py $load $iteration $channel $out\" 2>/dev/null &"
+p $workflow.inspect
+cmd = "xterm -T client -e \"python client.py -c #{$file} -o #{$out}\" 2>/dev/null &"
 launch_process(cmd, "client")
-
 
 #== wait for test finish(signal from client process) 
 f = File.open($pipe, 'r+')
 while true
     str = f.readline
+    p str
     if str =~ /^finish/i
         puts "got finish message!"
         break
     end
 end 
 
-
 #== analyze atop data
 cmd = "./analyze_load.sh -r #{atop_data} -b 00:00 -e 23:59 -o #{$out}"
 p cmd
 `#{cmd}`
 
-
 #== clean(kill processes,delete temp files...)
+p $pids
 $pids.each do |p|
     ret = `kill -9 #{p}`
 end

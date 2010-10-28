@@ -8,10 +8,6 @@ raw=""
 startt="00:00"
 endt="23:59"
 out="."
-out_cpu="${out}/cpu.load"
-out_mem="${out}/mem.load"
-out_dsk="${out}/dsk.load"
-touch $out_cpu $out_mem $out_dsk
 reg="\% ruby.*launch.rb\|^ATOP"
 
 if [ $# == 0 ];then
@@ -57,6 +53,11 @@ do
             ;;
     esac 
 done
+
+out_cpu="${out}/cpu.load"
+out_mem="${out}/mem.load"
+out_dsk="${out}/dsk.load"
+touch $out_cpu $out_mem $out_dsk
 
 # inject config pattern into .atoprc to fit following regular expression
 if [ -e ~/.atoprc ];then

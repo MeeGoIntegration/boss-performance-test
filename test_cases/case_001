@@ -2,24 +2,18 @@
     "name" => "This case is just for developing work",
     "desc" => "to comments",
     "channel" => "single",  #client
-    "load" => 1000,  #client
-    "iteration" => 5,  #client
-    "worker" => 1, #engine
+    "load" => 2,  #client
+    "iteration" => 1,  #client
+    "extra_worker" => 1, #engine
     "storage" => "FS", #engine & global config [reference to global config for detail]
     "participant" => ["sizer", "resizer"],
-    "workflow" => {
-        "definition" => """
+    "workflow" => """
             Ruote.process_definition :name => 'test_sequence' do
                 sequence do
-                    participant :sizer
-                    participant :resizer
+                    sizer
+                    resizer
                 end
             end
-        """,
-#       "fields" => {
-#           "version" => "1",
-#	    "thread_count" => 100,
-#       }
-    }, #client
-    "output" => ".", #engine, logger, analyze
+        """, #client
+    "output" => "./tmp", #engine, logger, analyze
 }

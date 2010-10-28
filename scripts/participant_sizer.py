@@ -5,14 +5,12 @@ import os
 import random
 import time
 from optparse import OptionParser, OptionGroup
-
-# Just until Ruote-AMQP is in a proper place
-sys.path.append(os.path.dirname(__file__)+"/../../integration")
-
 from  RuoteAMQP.workitem import Workitem
 from  RuoteAMQP.participant import Participant
 import simplejson as json
 
+# Class to
+#   - real participant imlemented here
 class Sizer(Participant):
     execute_num = 0
 
@@ -23,14 +21,14 @@ class Sizer(Participant):
         print "sizer [ver: "+wi.fields()['version']+" | num: "+str(Sizer.execute_num)+"]"
         wi.set_result(True)
 
+# Function to:
+#   - parse command line options
 def parseCmdline():
     parser = OptionParser(prog="participant_sizer", add_help_option=False)
     parser.disable_interspersed_args()
-    parser.add_option("--host", "-h", help="amqp host")
-    parser.add_option("--user", "-u", help="amqp user")
-    parser.add_option("--password", "-p", help="amqp password")
-    parser.add_option("--vhost", "-v", help="amqp vhost")
-    parser.add_option("--queue", "-q", help="ruote queue")
+    
+    parser.add_option("--config", "-c", help="test case config file")
+    parser.add_option("--out", "-o", help="output folder, also using as workarea")
 
     parser.set_defaults(verbose=0, quiet=0)
     #parser.set_usage("How to use")
@@ -38,31 +36,31 @@ def parseCmdline():
     
     return (parser, options, args)
 
-def main():
-    host_name = "amqpvm"
-    user_name = "ruote"
-    user_password = "ruote"
-    vhost = "ruote-test"
-    queue = "sizer"
+# Function to:
+#   - load config file in memory
+def load_config(file):
+    f = open(file)
+    str = f.read().replace('=>', ':')
+    #print str
+    cfg = eval(str)
+    return cfg
 
+# Function to 
+#   - execute real work
+def main():
+    # get command line options
     parser, options, args = parseCmdline()
-    if not options.queue:
-        parser.print_help()
-        return
-    if options.host:
-        host_name = options.host
-    if options.user:
-        user_name = options.user
-    if options.password:
-        user_password = options.password
-    if options.vhost:
-        vhost = options.vhost
-    if options.queue:
-        queue = options.queue
+
+    # load global config config file
+    global_conf = load_config("./global.config")
 
     print "Started a participant: sizer"
-    sizer = Sizer(ruote_queue=queue, amqp_host=host_name, 
-                  amqp_user=user_name, amqp_pass=user_password,amqp_vhost=vhost)
+    amqp_conf = global_conf['amqp']
+    sizer = Sizer(ruote_queue = global_conf['participant']['sizer']['queue'], 
+                        amqp_host = amqp_conf['host'], 
+                        amqp_user = amqp_conf['user'], 
+                        amqp_pass = amqp_conf['pass'],
+                        amqp_vhost = amqp_conf['vhost'])
     sizer.run()
 
 if __name__ == "__main__":
