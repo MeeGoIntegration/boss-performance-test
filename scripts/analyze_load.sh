@@ -8,7 +8,7 @@ raw=""
 startt="00:00"
 endt="23:59"
 out="."
-reg="\% ruby.*launch.rb\|^ATOP"
+reg="[[:digit:]]\% ruby.*launch.rb\|^ATOP"
 
 if [ $# == 0 ];then
     usage
