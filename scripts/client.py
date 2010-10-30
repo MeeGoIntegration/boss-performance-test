@@ -49,7 +49,8 @@ def parseCmdline():
 #   - load config file in memory
 def load_config(file):
     f = open(file)
-    str = f.read().replace('=>', ':')
+    str = f.read()
+    str = str.replace('=>', ':')
     #print str
     cfg = eval(str)
     return cfg
@@ -84,12 +85,16 @@ def main():
         os.remove(finish_flag)
 
     # send workflows to engine iteratively by load 
-    # TODO
-    workflow_core = case_conf['workflow'].replace('name :', 'name =>')
-    #print workflow_core
+    workflow_core_file = case_conf['workflow']
+    dir, name = os.path.split(options.config)
+    workflow_core_file = dir + '/' + workflow_core_file
+    workflow_core = open(workflow_core_file).read()
+    print workflow_core
+
     workflow = {}
     workflow['definition'] = workflow_core
     workflow['fields'] = {}
+    print workflow
     for j in range(case_conf['iteration']):
         for i in range(case_conf['load']):
             workflow["fields"]["version"] = str(i+1)
