@@ -39,8 +39,9 @@ def launch_process(cmd, title)
     pid = fork
     if not pid
         puts "launching process: #{title}"
-        cmd_pid = " echo $! >#{$out}/#{title}.pid"
-        cmd = cmd + cmd_pid
+	prefix = "#{$out}/xterm_#{title}"
+        cmd_pid = "echo $! >#{prefix}.pid"
+	cmd = "xterm -T #{title} -e \"script -f #{prefix}.log -c '#{cmd} 2>&1'\"& #{cmd_pid}"
         p cmd
         #exec("xterm -T ccc -e \"ping www.baidu.com\" &")
         exec(cmd)
@@ -131,23 +132,23 @@ preprocess()
 
 #== launch atop process
 atop_data = "#{$out}/atop.raw"
-cmd = "xterm -T atop -e \"atop -w #{atop_data} 5\" 2>/dev/null &"
+cmd = "atop -w #{atop_data} 5"
 launch_process(cmd, 'atop')
 
 #== launch engine process
-cmd = "xterm -T engine -e \"ruby ./launch.rb -c #{$file} -o #{$out}\" 2>/dev/null &"
+cmd = "ruby ./launch.rb -c #{$file} -o #{$out}"
 launch_process(cmd, 'engine')
 
 #== launch participant processes
 $participants.each do |par, path|
-    cmd = "xterm -T #{par} -e \"#{path}\" 2>/dev/null &"
+    cmd = "python #{path}"
     launch_process(cmd, par)
 end
 
 #== launch client process
 `sleep 3`
 p $workflow.inspect
-cmd = "xterm -T client -e \"python client.py -c #{$file} -o #{$out}\" 2>/dev/null &"
+cmd = "python client.py -c #{$file} -o #{$out}"
 launch_process(cmd, "client")
 
 #== wait for test finish(signal from client process) 
