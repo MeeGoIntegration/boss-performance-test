@@ -76,6 +76,7 @@ def main():
 
     # AMQP channel
     channel_opt = case_conf['channel']
+    chan = None
     if channel_opt == "single":
         chan = conn.channel()
 
@@ -89,12 +90,12 @@ def main():
     dir, name = os.path.split(options.config)
     workflow_core_file = dir + '/' + workflow_core_file
     workflow_core = open(workflow_core_file).read()
-    print workflow_core
+    #print workflow_core
 
     workflow = {}
     workflow['definition'] = workflow_core
     workflow['fields'] = {}
-    print workflow
+    #print workflow
     for j in range(case_conf['iteration']):
         for i in range(case_conf['load']):
             workflow["fields"]["version"] = str(i+1)
