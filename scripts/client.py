@@ -85,20 +85,29 @@ def main():
     if os.access(finish_flag, os.F_OK):
         os.remove(finish_flag)
 
-    # send workflows to engine iteratively by load 
+    # get workflow core from config file
     workflow_core_file = case_conf['workflow']
     dir, name = os.path.split(options.config)
     workflow_core_file = dir + '/' + workflow_core_file
     workflow_core = open(workflow_core_file).read()
     #print workflow_core
 
+    # assemble workflow message
     workflow = {}
     workflow['definition'] = workflow_core
     workflow['fields'] = {}
     workflow["fields"]["load"] = case_conf["load"]
     #print workflow
+    
+    # get timeout as second
+    timeout = case_conf["iteration_timeout"]
+    timeout = timeout * 60 # seconds
+    
+    # send workflows to engine iteratively by load 
+    ret = None
     for j in range(case_conf['iteration']):
         workflow["fields"]["iteration"] = (j+1)
+        timer = 0
         for i in range(case_conf["load"]):
             workflow["fields"]["version"] = str(i+1)
             t = RequestThread(conn, chan, channel_opt, i+1, workflow)
@@ -106,10 +115,23 @@ def main():
 
         print "-----------waiting....--------------"
 
-        while (not os.access(finish_flag, os.F_OK)):
-            time.sleep(1)
+        while True: 
+            if (not os.access(finish_flag, os.F_OK)):
+                time.sleep(1)
+                timer = timer + 1
+                print timer
+                if timer > timeout:
+                    print "ERROR: timeout for " + str(timeout) + " seconds!"
+                    ret = "timeout"
+                    break
+            else:
+                ret = "finish"
+                os.remove(finish_flag)
+                break
+        
+        if ret == "timeout":
+            break
 
-        os.remove(finish_flag)
         time.sleep(10)
 
     # AMQP channel
@@ -121,7 +143,7 @@ def main():
 
     # inform run.rb
     f = open(out + "/run.pipe", "w")
-    f.write("finish\n")
+    f.write(ret + "\n")
     f.close()
     raw_input("finish")
 

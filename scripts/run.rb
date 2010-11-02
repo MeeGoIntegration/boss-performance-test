@@ -164,12 +164,16 @@ cmd = "python client.py -c #{$file} -o #{$out}"
 launch_process(cmd, "client")
 
 #== wait for test finish(signal from client process) 
+ret = nil
 f = File.open($pipe_client, 'r+')
 while true
-    str = f.readline
-    p str
-    if str =~ /^finish/i
+    ret = f.readline
+    p ret
+    if ret =~ /^finish/i
         puts "got finish message!"
+        break
+    elsif ret =~ /^timeout/i
+        puts "got timeout message!"
         break
     end
 end 
@@ -187,7 +191,7 @@ File.delete($pipe_client)
 File.delete($pipe_rspec)
 
 #== inform rspec script
-File.open($pipe_rspec, 'w').write("finish\n")
+File.open($pipe_rspec, 'w').write(ret)
 
 #== finished!
 puts "===== test case finished ====="
