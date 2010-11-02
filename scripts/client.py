@@ -81,7 +81,7 @@ def main():
         chan = conn.channel()
 
     # clear finish flag file
-    finish_flag = out + "/load_over"
+    finish_flag = out + "/iteration_finish"
     if os.access(finish_flag, os.F_OK):
         os.remove(finish_flag)
 
@@ -95,9 +95,11 @@ def main():
     workflow = {}
     workflow['definition'] = workflow_core
     workflow['fields'] = {}
+    workflow["fields"]["load"] = case_conf["load"]
     #print workflow
     for j in range(case_conf['iteration']):
-        for i in range(case_conf['load']):
+        workflow["fields"]["iteration"] = (j+1)
+        for i in range(case_conf["load"]):
             workflow["fields"]["version"] = str(i+1)
             t = RequestThread(conn, chan, channel_opt, i+1, workflow)
             t.run()
@@ -117,11 +119,11 @@ def main():
     # AMQP connection
     conn.close()
 
-    # inform
+    # inform run.rb
     f = open(out + "/run.pipe", "w")
     f.write("finish\n")
     f.close()
-    raw_input("All requests have been sent.")
+    raw_input("finish")
 
 
 if __name__ == "__main__":

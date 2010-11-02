@@ -8,7 +8,8 @@ require 'optparse'
 $file = nil
 $out = nil
 $participants = Hash.new
-$pipe = nil
+$pipe_client = nil
+$pipe_rspec = nil
 $config = nil
 $global = nil
 
@@ -96,14 +97,25 @@ def preprocess()
         $participants[par] = global_conf['participant'][par]['path']
     end
 
-    # setup pipe
-    $pipe = "#{$out}/run.pipe" 
-    if File.exist?($pipe)
-        File.delete($pipe)
+    # setup pipe with client.py
+    $pipe_client = "#{$out}/run.pipe" 
+    if File.exist?($pipe_client)
+        File.delete($pipe_client)
     end
-    `mkfifo #{$pipe}`
-    if not File.exist?($pipe)
-        puts "failed to create pipe: #{$pipe}, check!"
+    `mkfifo #{$pipe_client}`
+    if not File.exist?($pipe_client)
+        puts "failed to create pipe: #{$pipe_client}, check!"
+        exit
+    end
+    
+    # setup pipe with rspec script
+    $pipe_rspec = "#{$out}/rspec.pipe" 
+    if File.exist?($pipe_rspec)
+        File.delete($pipe_rspec)
+    end
+    `mkfifo #{$pipe_rspec}`
+    if not File.exist?($pipe_rspec)
+        puts "failed to create pipe: #{$pipe_rspec}, check!"
         exit
     end
 
@@ -152,7 +164,7 @@ cmd = "python client.py -c #{$file} -o #{$out}"
 launch_process(cmd, "client")
 
 #== wait for test finish(signal from client process) 
-f = File.open($pipe, 'r+')
+f = File.open($pipe_client, 'r+')
 while true
     str = f.readline
     p str
@@ -171,7 +183,11 @@ p cmd
 #   - all processes and their *.pid files)
 #   - delete pipe
 kill_processes
-File.delete($pipe)
+File.delete($pipe_client)
+File.delete($pipe_rspec)
+
+#== inform rspec script
+File.open($pipe_rspec, 'w').write("finish\n")
 
 #== finished!
 puts "===== test case finished ====="
