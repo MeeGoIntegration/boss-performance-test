@@ -1,0 +1,53 @@
+# Please read "README" to get basic concepts firstly;
+# This config file is obey to Ruby syntax;
+# Every parameter must has value assigned;
+
+{
+    # Test case name; [string]
+    "name" => "This is your test case name",
+    
+    # Test case description; [string]
+    "desc" => "This is your test case desciption",
+    
+    # AMQp channel option; ["single", "multiple"]
+    # Send requests to engine by single channel or multiple channel:
+    #   - "single": all requests sending to engine by one AMQP channel
+    #   - "multiple": all requests sending to enging by seperated channels 
+    "channel" => "single" | "multiple",
+
+    # Workflow load option; [integer]
+    # How many workflows sending to engine at same time
+    "load" => 1000,
+
+    # Iteration option; [integer]
+    # one iteration begins at sending specific number of load workflows to engine, 
+    # ends at engine finishing all received. This option specify how many 
+    # iterations you would like to run
+    "iteration" => 1,  #client
+    
+    # Timeout for each iteration; [integer(minutes)]
+    # If the situation of losing workflows during testing, testing will be stuck. 
+    # This option is to avoid the infinite waiting in testing. So the value dependents on 
+    # your "load" and "workflow" numbers. The unit is "minute".
+    # Set this option carefully in order not to get timeout too early
+    "iteration_timeout" => 10,
+
+    # Extra worker; [integer]
+    # Normally engine will start at lease one worker. If you want to use more worker,
+    # specify this option. Example: 1 means there will be 2 workers: one in engine default
+    # and one extra  
+    "extra_worker" => 1,
+
+    # Engine(Ruote) storage type; ["FS", "DMS", "HS"]
+    # See detail definition in "scripts/global.config" 
+    "storage" => "FS", 
+    
+    # Participants using in this test case; ["xxx", "nnn"]
+    # This names will be mapped to "scripts/global.config"; so make sure
+    # your participant is configured in that file already
+    "participant" => ["sizer", "resizer"],
+
+    # Workflow using in this test case; [file name]
+    # Refer "README" to get how to add new workflow
+    "workflow" => "workflow_simple.config",
+}
