@@ -88,7 +88,7 @@ def main():
     # get workflow core from config file
     workflow_core_file = case_conf['workflow']
     dir, name = os.path.split(options.config)
-    workflow_core_file = dir + '/' + workflow_core_file
+    #workflow_core_file = dir + '/' + workflow_core_file
     workflow_core = open(workflow_core_file).read()
     #print workflow_core
 
