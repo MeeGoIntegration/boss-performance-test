@@ -33,7 +33,7 @@ describe "Boss performance test case" do
     #Dir.mkdir("#{output}/#{case_name}") if not File::directory?("#{output}/#{case_name}")
   end
 
-  it "#{case_name} - should #{case_desc}" do
+  it "#{case_name} - #{case_desc}" do
     tester = CaseTester.new(case_name)
     tester.run.should == true
   end  

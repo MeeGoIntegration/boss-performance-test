@@ -12,7 +12,7 @@ class SuiteTester
             casefile = File.new("#{@@output}/test_case.config", 'w');
             casefile.write(v.inspect);
             casefile.close;
-            system("spec ./case_spec.rb")
+            system("spec --format nested ./case_spec.rb")
         }
         f.close
     end
@@ -24,6 +24,7 @@ describe "Boss performance test - suite" do
     suites.each { |suitefile|
         tester = SuiteTester.new(suitefile)
         tester.run;
+        puts "**********************************************"
     }
   end
 
