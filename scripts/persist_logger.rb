@@ -87,7 +87,7 @@ module Ruote
                     puts "---------------------------------------\n"
                     reset_iteration()
                     #puts "#{Thread.list.size} ",
-                    #File.open("#{@out}/iteration_finish", 'w')
+                    File.open("#{@out}/iteration_finish", 'w')
                 end
             end
         end

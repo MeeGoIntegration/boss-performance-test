@@ -7,7 +7,7 @@ require 'optparse'
 
 $file = nil
 $out = nil
-$participants = Hash.new
+$participants = []
 $pipe_client = nil
 $pipe_rspec = nil
 $config = nil
@@ -88,14 +88,7 @@ def preprocess()
     
     # get participants hash
     case_conf = load_config($file)
-    global_conf = load_config("./global.config")
-    if case_conf['participant'].class != Array
-        puts "no participants found, check!"
-        exit
-    end
-    case_conf['participant'].each do |par|
-        $participants[par] = global_conf['participant'][par]['path']
-    end
+    $participants = case_conf['participant']
 
     # setup pipe with client.py
     $pipe_client = "#{$out}/run.pipe" 
@@ -152,8 +145,8 @@ cmd = "ruby ./launch.rb -c #{$file} -o #{$out}"
 launch_process(cmd, 'engine')
 
 #== launch participant processes
-$participants.each do |par, path|
-    cmd = "python #{path}"
+$participants.each do |par|
+    cmd = "python participant_launcher.py -p #{par}"
     launch_process(cmd, par)
 end
 

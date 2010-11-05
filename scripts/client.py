@@ -114,12 +114,13 @@ def main():
             t.run()
 
         print "-----------waiting....--------------"
+        print "\n"
 
         while True: 
             if (not os.access(finish_flag, os.F_OK)):
                 time.sleep(1)
                 timer = timer + 1
-                print timer
+                print "\rwaiting time: " + str(timer),
                 if timer > timeout:
                     print "ERROR: timeout for " + str(timeout) + " seconds!"
                     ret = "timeout"
