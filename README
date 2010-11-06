@@ -1,17 +1,96 @@
 BOSS Performance Test
-====================================================
-This project is structured as follows
 
-  .
-  |-cfg     : test config files
-  |-results : test result data <NOTICE: so far we haven't use it eigther>
+===================== Test Method ==============================
+
+* The basic method in this test project is to simulate boss using
+  in real world - running as a service for long time and dealing 
+  with multiple requests from multiple users continually; Then observe the 
+  performance data to get the evaluation
+
+* Concept "load" and "iteration":
+  * load: how many requests(workflows) sending to engine at same time
+  * iteration: one iteration begins at sending specific number of 
+    load workflows to engine, ends at engine finishing all received
+    workflows   
+
+* In each test case, specific load will be sent to engine iteratively
+  for specific iterations
+
+* Following processes will be created during each test case:
+  * client: sending "load" workflows to engine for each iteration and
+    waiting for the results; communicating with engine by AMQP 
+  * engine: handling workflows from client
+  * participants: participants processes; communicating with engine by AMQP
+  * atop: running "atop" to record cpu/memory/disk data during testing
+  * run.rb: launching and managing above processes   
+ 
+
+===================== Code Structure ==========================
+
+This project is structured as follows:
+    .
+    |-- scripts     : directory including scripts using internal
+    |-- test_cases  : directory including test case config files
+        |-- case.config:            example test case config file
+        |-- case.template:          test case config template 
+        |-- workflow_simple.config: a simple workflow for testing    
+    |-- test_spec.rb: file for RSpec running 
 
 
-TODO
+===================== How to Run ================================
 
-Modify those config files in /cfg as following from your requirements
-I think you need to modify followint values currently.
-engine_logger => <CURRENT_DIR>/persist_logger
+1. Change to the test directory
+2. Issue "spec test_spec.rb"
+3. After finish, check results in your home directory
 
-How TO RUN
-./RUN_TEST 100
+
+===================== Test Results ==============================
+
+* Test results are located in your home direcotory as default
+
+* Test results are structured as follows:
+    ~/boss_performance_results
+    |-- <case ID>   : directory inlcuding results for each test case
+        |-- xterm_atop.log:     xterm log for atop process
+        |-- xterm_client.log:   xterm log for client process
+        |-- xterm_engine.log:   xterm log for engine process  
+        |-- xterm_sizer.log:    xterm log for participant process  
+        |-- xterm_resizer.log:  xterm log for participant process  
+        |-- cpu.load:           cpu load data for engine process
+        |-- mem.load:           memory load data for engine process
+        |-- dsk.load:           disk load data for engine process
+        |-- atop.raw:           atop raw data(just keep for reference)
+        |-- storage:            storage raw data(just keep for reference)
+
+* What you can get:
+    * cpu/memory/load data of engine from "*.load" files
+    * Iteration start/end time, iteration duration and average rate from "xterm_engine.log" file
+    * Useful info from other files for debugging purpose 
+
+
+===================== How to add new test case ==================
+
+* Test case is descripted as config file which is located in 
+  "test_cases" directory; Refer "case.config" as example
+
+* There are some parameters in each test case config, such as "load",
+  "iteration", "storage"... Check "case.template" for each parameter
+  detail
+
+* You can modify existing "case.config" to add your test cases
+  or
+  add new "xxx.config" file and modify "test_spec.rb" file  
+
+
+===================== How to add new participants ================
+
+1. Create your own pariticipants file; refer to existing participants
+2. Update "scripts/global.config" to add your participant info
+
+
+===================== How to add new workflow =====================
+
+1. One workflow is one config file; refer to "test_cases/workflow_simple.config"
+   to create new workflow
+2. To using your new workflow, just specify the workflow config file name in your
+   test case config file

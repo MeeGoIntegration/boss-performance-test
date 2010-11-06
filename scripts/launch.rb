@@ -67,7 +67,7 @@ def register_participants
         participant_names = $case_conf['participant']
         participant_names.each do |name|
             part = part_list[name.downcase]
-            $engine.register_participant(name, eval(part["class"]),
+            $engine.register_participant(name, eval(part["type"]),
                                          :command => part["command"], :queue => part["queue"])
         end
     end
