@@ -13,7 +13,7 @@ class SuiteTester
             casefile.write(v.inspect);
             casefile.close;
             #system("spec --format nested ./case_spec.rb")
-            system("#{@@rspec} ./scripts/case_spec.rb")
+            system("#{@@rspec} ./case_spec.rb")
         }
         f.close
     end

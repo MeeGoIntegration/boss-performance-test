@@ -9,7 +9,7 @@
     # Test case description; [string]
     "desc" => "This is your test case desciption",
     
-    # AMQp channel option; ["single", "multiple"]
+    # AMQP channel option; ["single", "multiple"]
     # Send requests to engine by single channel or multiple channel:
     #   - "single": all requests sending to engine by one AMQP channel
     #   - "multiple": all requests sending to enging by seperated channels 
@@ -21,14 +21,14 @@
 
     # Iteration option; [integer]
     # one iteration begins at sending specific number of load workflows to engine, 
-    # ends at engine finishing all received. This option specify how many 
+    # ends at engine finishing all recived workflows. This option specify how many 
     # iterations you would like to run
     "iteration" => 1,  #client
     
     # Timeout for each iteration; [integer(minutes)]
     # If the situation of losing workflows during testing, testing will be stuck. 
     # This option is to avoid the infinite waiting in testing. So the value dependents on 
-    # your "load" and "workflow" numbers. The unit is "minute".
+    # your "load" value. The unit is "minute".
     # Set this option carefully in order not to get timeout too early
     "iteration_timeout" => 10,
 
@@ -48,6 +48,6 @@
     "participant" => ["sizer", "resizer"],
 
     # Workflow using in this test case; [file name]
-    # Refer "README" to get how to add new workflow
+    # Refer to "README" about how to add new workflow
     "workflow" => "workflow_simple.config",
 }

@@ -2,7 +2,6 @@
 # and open the template in the editor.
 require 'rubygems'
 require 'ruote'
-require 'ruote/storage/fs_storage'
 require 'ruote-amqp'
 require 'optparse'
 
@@ -49,8 +48,9 @@ def init_engine
         `mkdir #{storage_dir}`
         
         # example: Ruote::FsStorage.new('./tmp/storage')
+        load storage["file"]
         str = storage["class"]+".new('"+storage_dir+"')"
-        p str
+        #p str
         $engine = Ruote::Engine.new(Ruote::Worker.new(eval(str)))
 	if $global_conf['engine_logger']
 	    logger = $global_conf['engine_logger']
@@ -67,8 +67,13 @@ def register_participants
         participant_names = $case_conf['participant']
         participant_names.each do |name|
             part = part_list[name.downcase]
-            $engine.register_participant(name, eval(part["type"]),
-                                         :command => part["command"], :queue => part["queue"])
+            if part["type"] == "remote"
+                $engine.register_participant(name, RuoteAMQP::Participant, 
+                                             :command => part["command"], :queue => part["queue"])
+            else
+                load part["file"]
+                $engine.register_participant(name, part["class"])
+            end
         end
     end
 end

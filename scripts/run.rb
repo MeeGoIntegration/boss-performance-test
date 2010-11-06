@@ -141,7 +141,7 @@ cmd = "atop -w #{atop_data} 5"
 launch_process(cmd, 'atop')
 
 #== launch engine process
-cmd = "ruby ./launch.rb -c #{$file} -o #{$out}"
+cmd = "ruby ./engine.rb -c #{$file} -o #{$out}"
 launch_process(cmd, 'engine')
 
 #== launch participant processes
