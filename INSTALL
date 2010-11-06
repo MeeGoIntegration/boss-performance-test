@@ -3,18 +3,22 @@ BOSS Performance Test Suite Installation Instruction
 ============== Install From Source ==============
 
 1. Get source code from "git://gitorious.org/meego-infrastructure-tools/boss-performance-test.git"
+
 2. Make sure you have installed following dependencies:
     * rabbitmq-server
     * rubygem-ruote
     * rubygem-amqp
     * rubygem-ruote-amqp
     * rubygem-yajl-ruby
-    * pyton-amqplib
+    * python-amqplib
     * ruote-amqp-pyclient
+    * atop
+
 3. Configure your Rabbitmq:
     3.1. rabbitmqctl add_vhost ruote-test
     3.2. rabbitmqctl add_user ruote ruote
     3.3. rabbitmqctl set_permissions -p ruote-test ruote '.*' '.*' '.*'
+
 4. Change to the "boss-performance-test" direcory, issue: "spec test_spec.rb" to see if it works well
 
 

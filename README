@@ -1,5 +1,11 @@
 BOSS Performance Test
 
+===================== Note =====================================
+
+* Don't run multiple test instances at same time since they all use
+  same AMQP configuration
+
+
 ===================== Test Method ==============================
 
 * The basic method in this test project is to simulate boss using
@@ -23,7 +29,15 @@ BOSS Performance Test
   * participants: participants processes; communicating with engine by AMQP
   * atop: running "atop" to record cpu/memory/disk data during testing
   * run.rb: launching and managing above processes   
- 
+
+* We're trying to make our test suite more configurable with help from two
+  kinds of config files:
+  * "global.config": contains many detail info such as AMQP, participants, 
+    storage... See following sections for when/how to modify it
+  * "*.config" files under "test_cases": test case is descripted in these
+    config file. Normally one config file is a test suite with multiple test
+    cases. See following section for when/how to modify it 
+
 
 ===================== Code Structure ==========================
 
@@ -36,13 +50,13 @@ This project is structured as follows:
         |-- global.config
         |-- participant_launcher.py
         |-- participants:   participant definition
-            |-- error_handler.rb
-            |-- resizer.py
-            |-- sizer.py
+            |-- error_handler.rb:   default local participant
+            |-- resizer.py:         default remote participant
+            |-- sizer.py:           default remote participant
         |-- persist_logger.rb
         |-- run.rb
         |-- workflow:       workflow definition
-            |-- workflow_simple.config
+            |-- workflow_simple.config: default workflow
         |-- workman.rb
     |-- test_cases  : directory including test case config files
         |-- test_suite_0.config:    example test case config file
@@ -96,15 +110,18 @@ This project is structured as follows:
   "iteration", "storage"... Check "test_suite.template" for each 
   parameter detail
 
-* You can modify existing "case.config" to add your test cases
+* You can modify existing config files to add your test cases
   or
-  add new "xxx.config" file and modify "test_spec.rb" file  
+  add new config file and modify "spec_helper.rb" file to point to 
+  your test config file.(such as "*.config" format is supported)  
 
 
 ===================== How to add new participants ================
 
-1. Create your own pariticipants file; refer to existing participants
-2. Update "scripts/global.config" to add your participant info
+1. One participant is one file contains a local participant(ruby file) or 
+   a remote participant(python file); refer to files under "scripts/participants/"
+   to create your participant
+3. Update "scripts/global.config" to add your participant's detail info
 
 
 ===================== How to add new workflow =====================
