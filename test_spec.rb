@@ -1,4 +1,4 @@
-require File.dirname(__FILE__) + '/scripts/spec_helper'
+require File.dirname(__FILE__) + '/spec_helper'
 
 class SuiteTester
     def initialize(suitename)
