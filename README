@@ -30,23 +30,42 @@ BOSS Performance Test
 This project is structured as follows:
     .
     |-- scripts     : directory including scripts using internal
+        |-- analyze_load.sh
+        |-- client.py
+        |-- engine.rb
+        |-- global.config
+        |-- participant_launcher.py
+        |-- participants:   participant definition
+            |-- error_handler.rb
+            |-- resizer.py
+            |-- sizer.py
+        |-- persist_logger.rb
+        |-- run.rb
+        |-- workflow:       workflow definition
+            |-- workflow_simple.config
+        |-- workman.rb
     |-- test_cases  : directory including test case config files
-        |-- case.config:            example test case config file
-        |-- case.template:          test case config template 
+        |-- test_suite_0.config:    example test case config file
+        |-- test_suite.template:    test case config template 
         |-- workflow_simple.config: a simple workflow for testing    
-    |-- test_spec.rb: file for RSpec running 
+    |-- test_spec.rb:   file for RSpec running 
+    |-- spec_helper.rb: helper script for RSpec
+    |-- case_spec.rb:
 
 
 ===================== How to Run ================================
 
 1. Change to the test directory
-2. Issue "spec test_spec.rb"
-3. After finish, check results in your home directory
+2. Specify your test suite config file in "spec_helper.rb"(refer to
+   following "How to add new test case" section)
+3. Issue "spec test_spec.rb"
+4. After finish, check results in your home directory
 
 
 ===================== Test Results ==============================
 
-* Test results are located in your home direcotory as default
+* Test results are located in your home direcotory as default;
+  you can also change it by modify "spec_helper.rb"
 
 * Test results are structured as follows:
     ~/boss_performance_results
@@ -64,18 +83,18 @@ This project is structured as follows:
 
 * What you can get:
     * cpu/memory/load data of engine from "*.load" files
-    * Iteration start/end time, iteration duration and average rate from "xterm_engine.log" file
+    * Iteration start/end time, iteration duration and rates from "xterm_engine.log" file
     * Useful info from other files for debugging purpose 
 
 
 ===================== How to add new test case ==================
 
 * Test case is descripted as config file which is located in 
-  "test_cases" directory; Refer "case.config" as example
+  "test_cases" directory; Refer "test_suite_0.config" as example
 
-* There are some parameters in each test case config, such as "load",
-  "iteration", "storage"... Check "case.template" for each parameter
-  detail
+* There are some parameters in test case config, such as "load",
+  "iteration", "storage"... Check "test_suite.template" for each 
+  parameter detail
 
 * You can modify existing "case.config" to add your test cases
   or
@@ -90,7 +109,7 @@ This project is structured as follows:
 
 ===================== How to add new workflow =====================
 
-1. One workflow is one config file; refer to "test_cases/workflow_simple.config"
+1. One workflow is one config file; refer to "scripts/workflows/workflow_simple.config"
    to create new workflow
 2. To using your new workflow, just specify the workflow config file name in your
    test case config file
