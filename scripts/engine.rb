@@ -54,7 +54,15 @@ def init_engine
         $engine = Ruote::Engine.new(Ruote::Worker.new(eval(str)))
 	if $global_conf['engine_logger']
 	    logger = $global_conf['engine_logger']
-            $engine.add_service('s_logger', logger['path'], logger['class'], $out)
+            $engine.add_service('s_logger', logger['path'], logger['class'], {"out"=>$out, "name"=>"Worker-default"})
+	    #run extra worker
+	    $case_conf['extra_worker'].times do |n|
+		Thread.new{
+		    workman = Ruote::Worker.new(eval(str));
+		    workman.context.add_service('s_logger', logger['path'], logger['class'], {"out"=>$out, "name"=>"Worker-#{n}"});
+		    workman.run;
+		}
+	    end
 	end
     end
 end
