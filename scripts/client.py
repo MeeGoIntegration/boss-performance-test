@@ -9,6 +9,45 @@ import threading
 import time
 import os
 
+out = "/root/results/case_001"
+
+def load_global_config():
+    cfg = {
+        "amqp" : {
+	    "host" : "amqpvm",
+            "user" : "ruote",
+	    "pass" : "ruote",
+            "vhost" : "ruote-test"
+	 }
+    }
+    return cfg
+
+def load_case_config():
+    cfg = {
+        "case_name" : "case_001",
+	"channel" : "single",
+	"load" : 99,
+	"iteration" : 3,
+	"iteration_timeout" : 10
+	}
+    return cfg
+
+workflow = {
+         "definition" : """
+	     Ruote.process_definition :name => 'boss-performance-test' do
+	       sequence do
+	         pilot
+		 sizer
+		 resizer
+		 pilot
+	       end
+	     """,
+	   "fields" : {
+	       "dirty" : 0,
+	       "version" : 0
+	       }
+	   }
+
 # Class to:
 #   - send multiple workflows to engine in different threads concurrectly
 class RequestThread(threading.Thread):
@@ -55,16 +94,19 @@ def load_config(file):
     cfg = eval(str)
     return cfg
 
+
 # Function to:
 #   - execute real work
 def main():
     # get command line options
-    parser, options, args = parseCmdline()
-    out = options.out
+    #parser, options, args = parseCmdline()
+    #out = options.out
 
     # load global and case config files
-    global_conf = load_config("./global.config")
-    case_conf = load_config(options.config)
+    #global_conf = load_config("./global.config")
+    #case_conf = load_config(options.config)
+    global_conf = load_global_config()
+    case_conf = load_case_config()
 
     # AMQP connection
     amqp_conf = global_conf['amqp']
@@ -86,16 +128,19 @@ def main():
         os.remove(finish_flag)
 
     # get workflow core from config file
-    workflow_core_file = case_conf['workflow']
-    workflow_core_file = "./workflows/" + workflow_core_file
-    workflow_core = open(workflow_core_file).read()
+    #workflow_core_file = case_conf['workflow']
+    #workflow_core_file = "./workflows/" + workflow_core_file
+    #workflow_core = open(workflow_core_file).read()
     #print workflow_core
 
     # assemble workflow message
-    workflow = {}
-    workflow['definition'] = workflow_core
-    workflow['fields'] = {}
+    #workflow = {}
+    #workflow['definition'] = workflow_core
+    #workflow['fields'] = {}
+    workflow["fields"]["case_name"] = case_conf["case_name"]
+    workflow["fields"]["iteration"] = case_conf["iteration"]
     workflow["fields"]["load"] = case_conf["load"]
+    workflow["fields"]["output"] = out #"/root/results/case_001"
     #print workflow
     
     # get timeout as second
@@ -108,7 +153,7 @@ def main():
         workflow["fields"]["iteration"] = (j+1)
         timer = 0
         for i in range(case_conf["load"]):
-            workflow["fields"]["version"] = str(i+1)
+            workflow["fields"]["version"] = (i+1) #str(i+1)
             t = RequestThread(conn, chan, channel_opt, i+1, workflow)
             t.run()
 
