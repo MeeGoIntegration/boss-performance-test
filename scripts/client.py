@@ -14,10 +14,10 @@ out = "/root/results/case_001"
 def load_global_config():
     cfg = {
         "amqp" : {
-	    "host" : "amqpvm",
-            "user" : "ruote",
-	    "pass" : "ruote",
-            "vhost" : "ruote-test"
+	    "host" : "localhost",
+            "user" : "boss",
+	    "pass" : "boss",
+            "vhost" : "boss"
 	 }
     }
     return cfg
@@ -26,8 +26,8 @@ def load_case_config():
     cfg = {
         "case_name" : "case_001",
 	"channel" : "single",
-	"load" : 99,
-	"iteration" : 3,
+	"load" : 2,
+	"iteration" : 1,
 	"iteration_timeout" : 10
 	}
     return cfg
@@ -36,11 +36,10 @@ workflow = {
          "definition" : """
 	     Ruote.process_definition :name => 'boss-performance-test' do
 	       sequence do
-	         pilot
-		 sizer
-		 resizer
-		 pilot
+                 pilot
+                 pilot
 	       end
+             end
 	     """,
 	   "fields" : {
 	       "dirty" : 0,
