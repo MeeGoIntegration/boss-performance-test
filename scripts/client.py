@@ -9,7 +9,7 @@ import threading
 import time
 import os
 
-out = "/root/results/case_001"
+out = "./tmp"
 
 def load_global_config():
     cfg = {
@@ -24,10 +24,10 @@ def load_global_config():
 
 def load_case_config():
     cfg = {
-        "case_name" : "case_001",
+        "case_name" : "case_002",
 	"channel" : "single",
 	"load" : 2,
-	"iteration" : 1,
+	"iteration" : 3,
 	"iteration_timeout" : 10
 	}
     return cfg
@@ -176,7 +176,7 @@ def main():
         if ret == "timeout":
             break
 
-        time.sleep(10)
+        time.sleep(2)
 
     # AMQP channel
     if channel_opt == "single":
