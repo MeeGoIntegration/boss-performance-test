@@ -2,9 +2,6 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 
 describe "BOSS performance test suite" do
-	before(:all) do
-		Dir.mkdir("./tmp") if not File::directory?("./tmp")
-	end
 
 	it "should run test case 001 and get finished" do
 		options = {
