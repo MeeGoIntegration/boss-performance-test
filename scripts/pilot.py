@@ -3,8 +3,7 @@ from  RuoteAMQP.participant import Participant
 import datetime
 import logging
 import os
-from decimal import *
-#getcontext().prec = 3
+import time
 
 
 # Class 
@@ -54,7 +53,7 @@ class Pilot(Participant):
         self.logger.setLevel(logging.NOTSET)
 
     def updateLogger(self, file):
-        if not self.file_hdlr:
+        if self.file_hdlr:
             self.logger.removeHandler(self.file_hdlr)
         self.file_hdlr = logging.FileHandler(file)
         self.logger.addHandler(self.file_hdlr)
@@ -77,25 +76,25 @@ class Pilot(Participant):
                 self.logger.info("Start:\t\t%s" %(self.start_t))
 
             self.start_cnt += 1
+	    print "started: %d, finished: %d" %(self.start_cnt, self.end_cnt)
         else:
             self.end_cnt += 1
+	    print "->started: %d, finished: %d" %(self.start_cnt, self.end_cnt)
 
             if self.end_cnt == self.load:
                 self.end_t = datetime.datetime.now()
-                duration = Decimal(str((self.end_t - self.start_t).microseconds))/Decimal('1000000')
-                print (self.end_t - self.start_t).microseconds
-                print Decimal(str((self.end_t - self.start_t).microseconds))
-                rate = Decimal(self.load)/duration
+                delta = self.end_t - self.start_t
+		duration = (delta.seconds * 1000 * 1000 + delta.microseconds) / (1000 * 1000.0)
+                rate = self.load / duration
                 # log to file and stdout
                 self.logger.info("End:\t\t%s" %(self.end_t))
-                self.logger.info("Duration:\t%d seconds" %duration)
-                self.logger.info("Rate:\t\t%d workflows/second" %rate)
+                self.logger.info("Duration:\t%.2f seconds" %duration)
+                self.logger.info("Rate:\t\t%.2f workflows/second" %rate)
                 self.logger.info("== END")
 
                 self.finish_iteration(fields)
 
-        import time
-        time.sleep(0.5)
+        #time.sleep(0.2)
         wi.set_result(True)
 
 def main():

@@ -1,39 +1,41 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
-class SuiteTester
-    def initialize(suitename)
-        @suitename = suitename
-    end
-   
-    def run
-        f = File.open("#{@suitename}", 'r')
-        cases = eval(f.read)
-        cases.each { |k, v|
-            casefile = File.new("#{@@output}/test_case.config", 'w');
-            casefile.write(v.inspect);
-            casefile.close;
-            #system("spec --format nested ./case_spec.rb")
-            system("#{@@rspec} ./case_spec.rb")
-        }
-        f.close
-    end
+
+describe "BOSS performance test suite" do
+	before(:all) do
+		Dir.mkdir("./tmp") if not File::directory?("./tmp")
+	end
+
+	it "should run test case 001 and get finished" do
+		options = {
+			"case_name" => "case_001",
+			"channel" => "multiple",
+			"load" => 200,
+			"iteration" => 1,
+			"iteration_timeout" => 600,
+			"workflow" => "scripts/workflows/workflow_simple.config",
+		}
+		runner = MyRunner.new(options)
+		runner.run.should == "finish"
+	end
+	
+	it "should run test case 002 and get finished" do
+		options = {
+			"case_name" => "case_002",
+			"channel" => "multiple",
+			"load" => 50,
+			"iteration" => 1,
+			"iteration_timeout" => 600,
+			"workflow" => "scripts/workflows/workflow_simple.config",
+		}
+		runner = MyRunner.new(options)
+		runner.run.should == "finish"
+	end
 end
 
-describe "Boss performance test - suite" do
-  before(:all) do
-      Dir.mkdir("#{@@output}") if not File::directory?("#{@@output}")
-  end
 
-  it "should run all test cases included in specified config file" do
-    suites = Dir.glob("#{@@suite}")
-    suites.each { |suitefile|
-        tester = SuiteTester.new(suitefile)
-        tester.run;
-        puts "***********************************************"
-    }
-  end
 
-  after(:all) do
-      File.unlink("#{@@output}/test_case.config") if File.exists?("#{@@output}/test_case.config")
-  end
-end
+
+
+
+
