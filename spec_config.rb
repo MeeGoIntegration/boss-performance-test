@@ -8,5 +8,5 @@ $config = {
 
 	"output" => "#{ENV["HOME"]}/results",
 
-	"atop_sample_interval" => 1,
+	"atop_sample_interval" => 3,
 }

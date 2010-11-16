@@ -23,105 +23,62 @@ BOSS Performance Test
   for specific iterations
 
 * Following processes will be created during each test case:
-  * client: sending "load" workflows to engine for each iteration and
-    waiting for the results; communicating with engine by AMQP 
-  * engine: handling workflows from client
   * participants: participants processes; communicating with engine by AMQP
   * atop: running "atop" to record cpu/memory/disk data during testing
-  * run.rb: launching and managing above processes   
 
 * We're trying to make our test suite more configurable with help from two
   kinds of config files:
-  * "global.config": contains many detail info such as AMQP, participants, 
-    storage... See following sections for when/how to modify it
-  * "*.config" files under "test_cases": test case is descripted in these
-    config file. Normally one config file is a test suite with multiple test
-    cases. See following section for when/how to modify it 
+  * "spec_config.rb": contains some detail info such as AMQP, atop options...
+    See following sections for when/how to modify it
 
 
 ===================== Code Structure ==========================
 
 This project is structured as follows:
-    .
-    |-- scripts     : directory including scripts using internal
-        |-- analyze_load.sh
-        |-- client.py
-        |-- engine.rb
-        |-- global.config
-        |-- participant_launcher.py
-        |-- participants:   participant definition
-            |-- error_handler.rb:   default local participant
-            |-- resizer.py:         default remote participant
-            |-- sizer.py:           default remote participant
-        |-- persist_logger.rb
-        |-- run.rb
-        |-- workflow:       workflow definition
-            |-- workflow_simple.config: default workflow
-        |-- workman.rb
-    |-- test_cases  : directory including test case config files
-        |-- test_suite_0.config:    example test case config file
-        |-- test_suite.template:    test case config template 
-        |-- workflow_simple.config: a simple workflow for testing    
-    |-- test_spec.rb:   file for RSpec running 
-    |-- spec_helper.rb: helper script for RSpec
-    |-- case_spec.rb:
+	.
+	|-- INSTALL
+	|-- README
+	|-- scripts
+	|   |-- analyze_load.sh
+	|   |-- pilot.py
+	|   `-- workflows
+	|       `-- workflow_simple.config
+	|-- spec_config.rb 			# config file
+	|-- spec_helper.rb	
+	|-- test-bigload_spec.rb 	# test suite to test big load
+	|-- test-demo_spec.rb		# demo test spec
+	`-- test-longtime_spec.rb	# test suite to run long time testing
 
 
 ===================== How to Run ================================
 
 1. Change to the test directory
-2. Specify your test suite config file in "spec_helper.rb"(refer to
+2. Specify your test suite config file in "spec_config.rb"(refer to
    following "How to add new test case" section)
-3. Issue "spec test_spec.rb"
-4. After finish, check results in your home directory
+3. Issue "spec test-demo_spec.rb"
+4. After finish, check results(home as default)
 
 
 ===================== Test Results ==============================
 
 * Test results are located in your home direcotory as default;
-  you can also change it by modify "spec_helper.rb"
+  you can also change it by modify "spec_config.rb"
 
 * Test results are structured as follows:
-    ~/boss_performance_results
-    |-- <case ID>   : directory inlcuding results for each test case
-        |-- xterm_atop.log:     xterm log for atop process
-        |-- xterm_client.log:   xterm log for client process
-        |-- xterm_engine.log:   xterm log for engine process  
-        |-- xterm_sizer.log:    xterm log for participant process  
-        |-- xterm_resizer.log:  xterm log for participant process  
-        |-- cpu.load:           cpu load data for engine process
-        |-- mem.load:           memory load data for engine process
-        |-- dsk.load:           disk load data for engine process
-        |-- atop.raw:           atop raw data(just keep for reference)
-        |-- storage:            storage raw data(just keep for reference)
+    ~/results
+	  |-- case_001.log	# test results, find "rate" data here
+	  |-- cpu.load		# cpu load
+	  |-- dsk.load		# disk load
+	  `-- mem.load		# memory load
 
 * What you can get:
     * cpu/memory/load data of engine from "*.load" files
-    * Iteration start/end time, iteration duration and rates from "xterm_engine.log" file
-    * Useful info from other files for debugging purpose 
+    * Iteration start/end time, iteration duration and rates from ".log" file
 
 
 ===================== How to add new test case ==================
 
-* Test case is descripted as config file which is located in 
-  "test_cases" directory; Refer "test_suite_0.config" as example
-
-* There are some parameters in test case config, such as "load",
-  "iteration", "storage"... Check "test_suite.template" for each 
-  parameter detail
-
-* You can modify existing config files to add your test cases
-  or
-  add new config file and modify "spec_helper.rb" file to point to 
-  your test config file.(such as "*.config" format is supported)  
-
-
-===================== How to add new participants ================
-
-1. One participant is one file contains a local participant(ruby file) or 
-   a remote participant(python file); refer to files under "scripts/participants/"
-   to create your participant
-3. Update "scripts/global.config" to add your participant's detail info
+* Refer to test-demo_spec.rb as the example to add your own test cases
 
 
 ===================== How to add new workflow =====================
@@ -129,4 +86,4 @@ This project is structured as follows:
 1. One workflow is one config file; refer to "scripts/workflows/workflow_simple.config"
    to create new workflow
 2. To using your new workflow, just specify the workflow config file name in your
-   test case config file
+   test spec file

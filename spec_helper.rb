@@ -8,7 +8,7 @@ require 'spec_config'
 $output = $config["output"]
 
 Spec::Runner.configure do |config|
-
+ 
 	def init_AMQP
 		AMQP.settings[:host] = $config["amqp"]["host"]
 		AMQP.settings[:vhost] = $config["amqp"]["vhost"]
@@ -20,7 +20,9 @@ Spec::Runner.configure do |config|
 			AMQP.start {
 			}
 		end
+		sleep 1
 		$queue = MQ.queue('ruote_workitems')
+		sleep 1
 	end
 
 	def kill_processes
@@ -60,6 +62,7 @@ Spec::Runner.configure do |config|
 			puts "ERROR: failed to start atop monitor! exiting..."
 			exit
 		end
+		sleep 1
 		print "ok\n"
 
 		print "starting participant pilot..."
